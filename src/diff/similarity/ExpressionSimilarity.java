@@ -3,7 +3,7 @@ package diff.similarity;
 import java.util.ArrayList;
 import java.util.List;
 
-import parser.syntaxtree.expression.Expression;
+import lexeme.java.tree.expression.Expression;
 
 /**
  * Similarity between two expressions.

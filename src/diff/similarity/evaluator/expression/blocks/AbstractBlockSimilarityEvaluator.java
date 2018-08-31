@@ -7,7 +7,7 @@ import diff.complexity.expression.blocks.AbstractBlockSizer;
 import diff.similarity.LeafSimilarity;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.blocks.AbstractBlock;
+import lexeme.java.tree.expression.blocks.AbstractBlock;
 
 /**
  * Visitor of left-hand side {@link AbstractBlock}, that produces a specific visitor for the right-hand side {@link AbstractBlock} to produce a {@link Similarity}.

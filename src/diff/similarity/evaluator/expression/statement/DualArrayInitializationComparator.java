@@ -5,13 +5,13 @@ import java.util.List;
 
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.expression.DualExpressionComparator;
+import lexeme.java.tree.expression.Expression;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialisationLeaf;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialisationRec;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialization;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitializationVisitor;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArraySizeDeclaration;
 import lombok.AllArgsConstructor;
-import parser.syntaxtree.expression.Expression;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialisationLeaf;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialisationRec;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialization;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitializationVisitor;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArraySizeDeclaration;
 
 /**
  * Compares two {@link ArrayInitialization}s that must have the same type.

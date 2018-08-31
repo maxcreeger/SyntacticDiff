@@ -2,7 +2,7 @@ package diff.complexity.expression.statement.operator;
 
 import diff.complexity.SyntaxSizer;
 import diff.complexity.expression.statement.StatementSizer;
-import parser.syntaxtree.expression.statement.operators.unary.UnaryOperator;
+import lexeme.java.tree.expression.statement.operators.unary.UnaryOperator;
 
 public final class UnaryOperatorSizer extends SyntaxSizer<UnaryOperator> {
     public static final UnaryOperatorSizer UNARY_OPERATOR_SIZER = new UnaryOperatorSizer();

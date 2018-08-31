@@ -8,8 +8,8 @@ import diff.similarity.LeafSimilarity;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
 import diff.similarity.evaluator.expression.ExpressionSimilarityEvaluator;
-import parser.syntaxtree.expression.statement.Statement;
-import parser.syntaxtree.expression.statement.operators.binary.BinaryOperator;
+import lexeme.java.tree.expression.statement.Statement;
+import lexeme.java.tree.expression.statement.operators.binary.BinaryOperator;
 
 /**
  * Compares two {@link BinaryOperator}s.

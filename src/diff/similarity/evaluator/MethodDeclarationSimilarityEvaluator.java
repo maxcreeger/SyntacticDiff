@@ -3,7 +3,7 @@ package diff.similarity.evaluator;
 import diff.complexity.MethodDeclarationSizer;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.expression.ExpressionSimilarityEvaluator;
-import parser.syntaxtree.MethodDeclaration;
+import lexeme.java.tree.MethodDeclaration;
 
 /**
  * Compares two {@link MethodDeclaration}s.

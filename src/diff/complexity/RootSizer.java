@@ -1,6 +1,6 @@
 package diff.complexity;
 
-import parser.syntaxtree.Root;
+import lexeme.java.tree.Root;
 
 public final class RootSizer extends SyntaxSizer<Root> {
 

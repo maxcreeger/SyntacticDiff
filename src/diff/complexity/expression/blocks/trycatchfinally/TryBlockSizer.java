@@ -3,7 +3,7 @@ package diff.complexity.expression.blocks.trycatchfinally;
 import diff.complexity.SyntaxSizer;
 import diff.complexity.expression.ExpressionSizer;
 import diff.complexity.expression.VariableDeclarationSizer;
-import parser.syntaxtree.expression.blocks.trycatchfinally.TryBlock;
+import lexeme.java.tree.expression.blocks.trycatchfinally.TryBlock;
 
 public final class TryBlockSizer extends SyntaxSizer<TryBlock> {
     public static final TryBlockSizer TRY_BLOCK_SIZER = new TryBlockSizer();

@@ -4,18 +4,18 @@ import diff.complexity.ClassNameSizer;
 import diff.complexity.SyntaxSizer;
 import diff.complexity.expression.statement.operator.OperatorSizer;
 import diff.complexity.expression.statement.primitivetypes.PrimitiveValueSizer;
-import parser.syntaxtree.expression.statement.ArrayAccess;
-import parser.syntaxtree.expression.statement.ArrayDeclaration;
-import parser.syntaxtree.expression.statement.ChainedAccess;
-import parser.syntaxtree.expression.statement.MethodInvocation;
-import parser.syntaxtree.expression.statement.NewInstance;
-import parser.syntaxtree.expression.statement.Return;
-import parser.syntaxtree.expression.statement.SelfReference;
-import parser.syntaxtree.expression.statement.Statement;
-import parser.syntaxtree.expression.statement.StatementVisitor;
-import parser.syntaxtree.expression.statement.VariableReference;
-import parser.syntaxtree.expression.statement.operators.Operator;
-import parser.syntaxtree.expression.statement.primitivetypes.PrimitiveValue;
+import lexeme.java.tree.expression.statement.ArrayAccess;
+import lexeme.java.tree.expression.statement.ArrayDeclaration;
+import lexeme.java.tree.expression.statement.ChainedAccess;
+import lexeme.java.tree.expression.statement.MethodInvocation;
+import lexeme.java.tree.expression.statement.NewInstance;
+import lexeme.java.tree.expression.statement.Return;
+import lexeme.java.tree.expression.statement.SelfReference;
+import lexeme.java.tree.expression.statement.Statement;
+import lexeme.java.tree.expression.statement.StatementVisitor;
+import lexeme.java.tree.expression.statement.VariableReference;
+import lexeme.java.tree.expression.statement.operators.Operator;
+import lexeme.java.tree.expression.statement.primitivetypes.PrimitiveValue;
 
 public final class StatementSizer extends SyntaxSizer<Statement> implements StatementVisitor<Integer> {
     public static final StatementSizer STATEMENT_SIZER = new StatementSizer();
@@ -52,9 +52,8 @@ public final class StatementSizer extends SyntaxSizer<Statement> implements Stat
 
     @Override
     public Integer visit(ChainedAccess chainedAccess) {
-        int initialStatement = this.size(chainedAccess.getSource());
-        int chain = this.size(chainedAccess.getChainedAction());
-        return initialStatement + 1 + chain;
+        int total = this.size(chainedAccess.getStatements());
+        return chainedAccess.getStatements().size() + total;
     }
 
     @Override

@@ -3,7 +3,7 @@ package diff.similarity.evaluator;
 import diff.complexity.ClassDeclarationSizer;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.expression.VariableDeclarationSimilarityEvaluator;
-import parser.syntaxtree.ClassDeclaration;
+import lexeme.java.tree.ClassDeclaration;
 
 /**
  * Compares two {@link ClassDeclaration}s.

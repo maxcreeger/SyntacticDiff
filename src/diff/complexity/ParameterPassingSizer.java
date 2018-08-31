@@ -1,7 +1,7 @@
 package diff.complexity;
 
 import diff.complexity.expression.statement.StatementSizer;
-import parser.syntaxtree.ParameterPassing;
+import lexeme.java.tree.ParameterPassing;
 
 public class ParameterPassingSizer extends SyntaxSizer<ParameterPassing> {
 

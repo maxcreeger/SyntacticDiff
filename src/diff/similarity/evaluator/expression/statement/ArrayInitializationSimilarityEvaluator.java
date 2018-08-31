@@ -7,11 +7,11 @@ import diff.complexity.expression.statement.ArrayInitializationSizer;
 import diff.similarity.LeafSimilarity;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialisationLeaf;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialisationRec;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialization;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitializationVisitor;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArraySizeDeclaration;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialisationLeaf;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialisationRec;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialization;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitializationVisitor;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArraySizeDeclaration;
 
 /**
  * Compares two {@link ArrayInitialization}s.

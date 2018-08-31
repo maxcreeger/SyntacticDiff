@@ -3,11 +3,11 @@ package diff.similarity.evaluator.expression.statement.operator;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.expression.statement.operator.binary.BinaryOperatorSimilarityEvaluator;
 import diff.similarity.evaluator.expression.statement.operator.unary.UnaryOperatorSimilarityEvaluator;
+import lexeme.java.tree.expression.statement.operators.Operator;
+import lexeme.java.tree.expression.statement.operators.OperatorVisitor;
+import lexeme.java.tree.expression.statement.operators.binary.BinaryOperator;
+import lexeme.java.tree.expression.statement.operators.unary.UnaryOperator;
 import lombok.AllArgsConstructor;
-import parser.syntaxtree.expression.statement.operators.Operator;
-import parser.syntaxtree.expression.statement.operators.OperatorVisitor;
-import parser.syntaxtree.expression.statement.operators.binary.BinaryOperator;
-import parser.syntaxtree.expression.statement.operators.unary.UnaryOperator;
 
 /**
  * compares two sub-types of {@link Operator}s together. They must be of the same sub-type

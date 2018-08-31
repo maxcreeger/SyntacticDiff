@@ -1,7 +1,7 @@
 package diff.complexity;
 
 import diff.complexity.expression.VariableDeclarationSizer;
-import parser.syntaxtree.ClassDeclaration;
+import lexeme.java.tree.ClassDeclaration;
 
 public final class ClassDeclarationSizer extends SyntaxSizer<ClassDeclaration> {
     public static final ClassDeclarationSizer CLASS_DECLARATION_SIZER = new ClassDeclarationSizer();

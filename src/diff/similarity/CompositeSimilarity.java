@@ -31,14 +31,16 @@ public class CompositeSimilarity extends Similarity {
         String header = "(" + name + ")";
         final String[] headerLine = new String[] {header, Double.toString(similarity()), header};
         result.add(headerLine);
-        for (Similarity similarity : contents) {
+        for (int s = 0; s < contents.length; s++) {
+            Similarity similarity = contents[s];
+            String separator = s < contents.length - 1 ? "|  " : "   ";
             List<String[]> show = similarity.show("");
             for (int i = 0; i < show.size(); i++) {
                 String pref;
                 if (i == 0) {
-                    pref = "+--";
+                    pref = "+——";
                 } else {
-                    pref = "|  ";
+                    pref = separator;
                 }
                 String[] strings = show.get(i);
                 result.add(new String[] {pref + strings[0], strings[1], pref + strings[2]});

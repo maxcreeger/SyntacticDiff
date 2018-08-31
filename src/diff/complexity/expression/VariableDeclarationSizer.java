@@ -2,7 +2,7 @@ package diff.complexity.expression;
 
 import diff.complexity.SyntaxSizer;
 import diff.complexity.expression.statement.StatementSizer;
-import parser.syntaxtree.expression.VariableDeclaration;
+import lexeme.java.tree.expression.VariableDeclaration;
 
 public final class VariableDeclarationSizer extends SyntaxSizer<VariableDeclaration> {
     public static final VariableDeclarationSizer VARIABLE_DECLARATION_SIZER = new VariableDeclarationSizer();

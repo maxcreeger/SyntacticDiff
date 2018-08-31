@@ -1,6 +1,6 @@
 package diff.complexity;
 
-import parser.syntaxtree.ParameterTypeDeclaration;
+import lexeme.java.tree.ParameterTypeDeclaration;
 
 public final class ParameterTypeDeclarationSizer extends SyntaxSizer<ParameterTypeDeclaration> {
     public static final ParameterTypeDeclarationSizer PARAMETER_TYPE__SIZER = new ParameterTypeDeclarationSizer();

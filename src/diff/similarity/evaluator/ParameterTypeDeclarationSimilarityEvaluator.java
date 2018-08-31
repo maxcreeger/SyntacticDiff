@@ -2,7 +2,7 @@ package diff.similarity.evaluator;
 
 import diff.complexity.ParameterTypeDeclarationSizer;
 import diff.similarity.Similarity;
-import parser.syntaxtree.ParameterTypeDeclaration;
+import lexeme.java.tree.ParameterTypeDeclaration;
 
 /**
  * Compares two {@link ParameterTypeDeclaration}s.

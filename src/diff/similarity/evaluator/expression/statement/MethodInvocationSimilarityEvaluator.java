@@ -4,7 +4,7 @@ import diff.complexity.expression.statement.MethodInvocationSizer;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.ParameterPassingSimilarityEvaluator;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.statement.MethodInvocation;
+import lexeme.java.tree.expression.statement.MethodInvocation;
 
 /**
  * Compares two {@link MethodInvocation}s.

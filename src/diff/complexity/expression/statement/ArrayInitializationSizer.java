@@ -1,11 +1,11 @@
 package diff.complexity.expression.statement;
 
 import diff.complexity.SyntaxSizer;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialisationLeaf;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialisationRec;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitialization;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArrayInitializationVisitor;
-import parser.syntaxtree.expression.statement.ArrayDeclaration.ArraySizeDeclaration;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialisationLeaf;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialisationRec;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitialization;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArrayInitializationVisitor;
+import lexeme.java.tree.expression.statement.ArrayDeclaration.ArraySizeDeclaration;
 
 public final class ArrayInitializationSizer extends SyntaxSizer<ArrayInitialization> implements ArrayInitializationVisitor<Integer> {
     public static final ArrayInitializationSizer ARRAY_INITIALIZATION_SIZER = new ArrayInitializationSizer();

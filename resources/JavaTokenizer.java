@@ -36,6 +36,7 @@ public class JavaTokenizer {
             while ((line = reader.readLine()) != null) {
                 file.append(line.trim()).append('\n');
             }
+            file.append("a").append("b").append("c");
         } catch (IOException e) {
             e.printStackTrace();
         }

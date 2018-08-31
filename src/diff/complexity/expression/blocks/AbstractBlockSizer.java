@@ -6,13 +6,13 @@ import diff.complexity.expression.blocks.trycatchfinally.CatchBlockSizer;
 import diff.complexity.expression.blocks.trycatchfinally.FinallyBlockSizer;
 import diff.complexity.expression.blocks.trycatchfinally.TryBlockSizer;
 import diff.complexity.expression.statement.StatementSizer;
-import parser.syntaxtree.expression.blocks.AbstractBlock;
-import parser.syntaxtree.expression.blocks.BlockVisitor;
-import parser.syntaxtree.expression.blocks.DoWhileBlock;
-import parser.syntaxtree.expression.blocks.ForBlock;
-import parser.syntaxtree.expression.blocks.IfBlock;
-import parser.syntaxtree.expression.blocks.WhileBlock;
-import parser.syntaxtree.expression.blocks.trycatchfinally.TryCatchFinallyBlock;
+import lexeme.java.tree.expression.blocks.AbstractBlock;
+import lexeme.java.tree.expression.blocks.BlockVisitor;
+import lexeme.java.tree.expression.blocks.DoWhileBlock;
+import lexeme.java.tree.expression.blocks.ForBlock;
+import lexeme.java.tree.expression.blocks.IfBlock;
+import lexeme.java.tree.expression.blocks.WhileBlock;
+import lexeme.java.tree.expression.blocks.trycatchfinally.TryCatchFinallyBlock;
 
 public final class AbstractBlockSizer extends SyntaxSizer<AbstractBlock> implements BlockVisitor<Integer> {
     public static final AbstractBlockSizer ABSTRACT_BLOCK_SIZER = new AbstractBlockSizer();

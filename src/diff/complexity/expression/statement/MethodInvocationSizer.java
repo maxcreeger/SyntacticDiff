@@ -1,7 +1,7 @@
 package diff.complexity.expression.statement;
 
 import diff.complexity.SyntaxSizer;
-import parser.syntaxtree.expression.statement.MethodInvocation;
+import lexeme.java.tree.expression.statement.MethodInvocation;
 
 public final class MethodInvocationSizer extends SyntaxSizer<MethodInvocation> {
     public static final MethodInvocationSizer METHOD_INVOCATION_SIZER = new MethodInvocationSizer();

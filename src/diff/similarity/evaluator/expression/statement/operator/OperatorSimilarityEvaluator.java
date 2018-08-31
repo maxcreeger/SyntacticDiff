@@ -4,10 +4,10 @@ import diff.complexity.expression.statement.operator.OperatorSizer;
 import diff.similarity.ExpressionSimilarity;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.statement.operators.Operator;
-import parser.syntaxtree.expression.statement.operators.OperatorVisitor;
-import parser.syntaxtree.expression.statement.operators.binary.BinaryOperator;
-import parser.syntaxtree.expression.statement.operators.unary.UnaryOperator;
+import lexeme.java.tree.expression.statement.operators.Operator;
+import lexeme.java.tree.expression.statement.operators.OperatorVisitor;
+import lexeme.java.tree.expression.statement.operators.binary.BinaryOperator;
+import lexeme.java.tree.expression.statement.operators.unary.UnaryOperator;
 
 /**
  * Compares two {@link Operator}s.

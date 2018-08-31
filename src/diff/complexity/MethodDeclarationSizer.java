@@ -1,7 +1,7 @@
 package diff.complexity;
 
 import diff.complexity.expression.ExpressionSizer;
-import parser.syntaxtree.MethodDeclaration;
+import lexeme.java.tree.MethodDeclaration;
 
 public final class MethodDeclarationSizer extends SyntaxSizer<MethodDeclaration> {
     public static final MethodDeclarationSizer METHOD_DECLARATION_SIZER = new MethodDeclarationSizer();

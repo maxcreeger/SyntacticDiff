@@ -15,18 +15,18 @@ import diff.similarity.evaluator.expression.ExpressionSimilarityEvaluator;
 import diff.similarity.evaluator.expression.blocks.trycatchfinally.CatchBlockSimilarityEvaluator;
 import diff.similarity.evaluator.expression.blocks.trycatchfinally.FinallyBlockSimilarityEvaluator;
 import diff.similarity.evaluator.expression.blocks.trycatchfinally.TryBlockSimilarityEvaluator;
+import lexeme.java.tree.expression.Expression;
+import lexeme.java.tree.expression.VariableDeclaration;
+import lexeme.java.tree.expression.blocks.AbstractBlock;
+import lexeme.java.tree.expression.blocks.BlockVisitor;
+import lexeme.java.tree.expression.blocks.DoWhileBlock;
+import lexeme.java.tree.expression.blocks.ForBlock;
+import lexeme.java.tree.expression.blocks.IfBlock;
+import lexeme.java.tree.expression.blocks.WhileBlock;
+import lexeme.java.tree.expression.blocks.trycatchfinally.FinallyBlock;
+import lexeme.java.tree.expression.blocks.trycatchfinally.TryCatchFinallyBlock;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import parser.syntaxtree.expression.Expression;
-import parser.syntaxtree.expression.VariableDeclaration;
-import parser.syntaxtree.expression.blocks.AbstractBlock;
-import parser.syntaxtree.expression.blocks.BlockVisitor;
-import parser.syntaxtree.expression.blocks.DoWhileBlock;
-import parser.syntaxtree.expression.blocks.ForBlock;
-import parser.syntaxtree.expression.blocks.IfBlock;
-import parser.syntaxtree.expression.blocks.WhileBlock;
-import parser.syntaxtree.expression.blocks.trycatchfinally.FinallyBlock;
-import parser.syntaxtree.expression.blocks.trycatchfinally.TryCatchFinallyBlock;
 
 /** Compares a {@link TryCatchFinallyBlock} to any other {@link AbstractBlock} to produce a {@link Similarity}. */
 @AllArgsConstructor

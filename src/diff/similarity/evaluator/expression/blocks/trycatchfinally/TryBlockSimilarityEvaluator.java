@@ -5,7 +5,7 @@ import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
 import diff.similarity.evaluator.expression.ExpressionSimilarityEvaluator;
 import diff.similarity.evaluator.expression.VariableDeclarationSimilarityEvaluator;
-import parser.syntaxtree.expression.blocks.trycatchfinally.TryBlock;
+import lexeme.java.tree.expression.blocks.trycatchfinally.TryBlock;
 
 /**
  * Compares two {@link TryBlock}s.

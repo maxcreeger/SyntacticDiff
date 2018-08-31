@@ -5,7 +5,7 @@ import diff.similarity.Similarity;
 import diff.similarity.evaluator.ClassNameSimilarityEvaluator;
 import diff.similarity.evaluator.ParameterPassingSimilarityEvaluator;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.statement.NewInstance;
+import lexeme.java.tree.expression.statement.NewInstance;
 
 /**
  * Compares two {@link NewInstance}s.

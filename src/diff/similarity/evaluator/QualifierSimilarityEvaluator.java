@@ -6,7 +6,7 @@ import java.util.List;
 import diff.complexity.QualifierSizer;
 import diff.similarity.LeafSimilarity;
 import diff.similarity.Similarity;
-import parser.syntaxtree.Qualifiers;
+import lexeme.java.tree.Qualifiers;
 
 /**
  * Compares two {@link Qualifiers}s.

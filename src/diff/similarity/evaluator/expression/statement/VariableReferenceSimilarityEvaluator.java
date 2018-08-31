@@ -3,7 +3,7 @@ package diff.similarity.evaluator.expression.statement;
 import diff.complexity.expression.statement.VariableReferenceSizer;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.statement.VariableReference;
+import lexeme.java.tree.expression.statement.VariableReference;
 
 /**
  * Compares two {@link VariableReference}s.

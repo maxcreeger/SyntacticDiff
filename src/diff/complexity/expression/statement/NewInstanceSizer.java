@@ -2,7 +2,7 @@ package diff.complexity.expression.statement;
 
 import diff.complexity.ClassNameSizer;
 import diff.complexity.SyntaxSizer;
-import parser.syntaxtree.expression.statement.NewInstance;
+import lexeme.java.tree.expression.statement.NewInstance;
 
 public final class NewInstanceSizer extends SyntaxSizer<NewInstance> {
     public static final NewInstanceSizer NEW_INSTANCE_SIZER = new NewInstanceSizer();

@@ -9,7 +9,7 @@ import diff.similarity.LeftLeafSimilarity;
 import diff.similarity.NoSimilarity;
 import diff.similarity.RightLeafSimilarity;
 import diff.similarity.Similarity;
-import parser.syntaxtree.ClassName;
+import lexeme.java.tree.ClassName;
 
 /**
  * Compares two {@link ClassName}s.
@@ -42,32 +42,32 @@ public class ClassNameSimilarityEvaluator extends SimilarityEvaluator<ClassName>
 
         // 'Super' keyword
         final Similarity superSimilarity;
-        if (class1.getSuperClass() == null) {
-            if (class2.getSuperClass() == null) {
-                superSimilarity = new NoSimilarity();
+        if (class1.getSuperClass().isPresent()) {
+            if (class2.getSuperClass().isPresent()) {
+                superSimilarity = this.eval(class1.getSuperClass().get(), class2.getSuperClass().get());
             } else {
-                superSimilarity = new RightLeafSimilarity<>(sizer.size(class2.getSuperClass()), class2.getSuperClass());
+                superSimilarity = new LeftLeafSimilarity<>(sizer.size(class1.getSuperClass().get()), class1.getSuperClass().get());
             }
         } else {
-            if (class2.getSuperClass() == null) {
-                superSimilarity = new LeftLeafSimilarity<>(sizer.size(class1.getSuperClass()), class1.getSuperClass());
+            if (class2.getSuperClass().isPresent()) {
+                superSimilarity = new RightLeafSimilarity<>(sizer.size(class2.getSuperClass().get()), class2.getSuperClass().get());
             } else {
-                superSimilarity = this.eval(class1.getSuperClass(), class2.getSuperClass());
+                superSimilarity = new NoSimilarity();
             }
         }
         // 'Extends' keyword
         final Similarity extendsSimilarity;
-        if (class1.getExtendsClass() == null) {
-            if (class2.getExtendsClass() == null) {
-                extendsSimilarity = new NoSimilarity();
+        if (class1.getExtendsClass().isPresent()) {
+            if (class2.getExtendsClass().isPresent()) {
+                extendsSimilarity = this.eval(class1.getExtendsClass(), class2.getExtendsClass());
             } else {
-                extendsSimilarity = new RightLeafSimilarity<>(sizer.size(class2.getExtendsClass()), class2.getExtendsClass());
+                extendsSimilarity = new LeftLeafSimilarity<>(sizer.size(class1.getExtendsClass().get()), class1.getExtendsClass().get());
             }
         } else {
-            if (class2.getExtendsClass() == null) {
-                extendsSimilarity = new LeftLeafSimilarity<>(sizer.size(class1.getExtendsClass()), class1.getExtendsClass());
+            if (class2.getExtendsClass().isPresent()) {
+                extendsSimilarity = new RightLeafSimilarity<>(sizer.size(class2.getExtendsClass().get()), class2.getExtendsClass().get());
             } else {
-                extendsSimilarity = this.eval(class1.getExtendsClass(), class2.getExtendsClass());
+                extendsSimilarity = new NoSimilarity();
             }
         }
         // Interfaces

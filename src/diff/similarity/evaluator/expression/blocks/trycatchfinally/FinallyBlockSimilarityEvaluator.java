@@ -4,7 +4,7 @@ import diff.complexity.expression.blocks.trycatchfinally.FinallyBlockSizer;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
 import diff.similarity.evaluator.expression.ExpressionSimilarityEvaluator;
-import parser.syntaxtree.expression.blocks.trycatchfinally.FinallyBlock;
+import lexeme.java.tree.expression.blocks.trycatchfinally.FinallyBlock;
 
 /**
  * Compares two {@link FinallyBlock}s.

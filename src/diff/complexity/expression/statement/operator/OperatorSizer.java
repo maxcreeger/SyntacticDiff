@@ -1,10 +1,10 @@
 package diff.complexity.expression.statement.operator;
 
 import diff.complexity.SyntaxSizer;
-import parser.syntaxtree.expression.statement.operators.Operator;
-import parser.syntaxtree.expression.statement.operators.OperatorVisitor;
-import parser.syntaxtree.expression.statement.operators.binary.BinaryOperator;
-import parser.syntaxtree.expression.statement.operators.unary.UnaryOperator;
+import lexeme.java.tree.expression.statement.operators.Operator;
+import lexeme.java.tree.expression.statement.operators.OperatorVisitor;
+import lexeme.java.tree.expression.statement.operators.binary.BinaryOperator;
+import lexeme.java.tree.expression.statement.operators.unary.UnaryOperator;
 
 public final class OperatorSizer extends SyntaxSizer<Operator> implements OperatorVisitor<Integer> {
     public static final OperatorSizer OPERATOR_SIZER = new OperatorSizer();

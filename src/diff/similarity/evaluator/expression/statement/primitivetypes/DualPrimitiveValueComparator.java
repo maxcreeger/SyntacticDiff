@@ -2,15 +2,15 @@ package diff.similarity.evaluator.expression.statement.primitivetypes;
 
 import diff.similarity.ExpressionSimilarity;
 import diff.similarity.Similarity;
+import lexeme.java.tree.expression.statement.primitivetypes.BooleanValue;
+import lexeme.java.tree.expression.statement.primitivetypes.CharValue;
+import lexeme.java.tree.expression.statement.primitivetypes.DoubleValue;
+import lexeme.java.tree.expression.statement.primitivetypes.IntegerValue;
+import lexeme.java.tree.expression.statement.primitivetypes.NullValue;
+import lexeme.java.tree.expression.statement.primitivetypes.PrimitiveValue;
+import lexeme.java.tree.expression.statement.primitivetypes.PrimitiveVisitor;
+import lexeme.java.tree.expression.statement.primitivetypes.StringValue;
 import lombok.AllArgsConstructor;
-import parser.syntaxtree.expression.statement.primitivetypes.BooleanValue;
-import parser.syntaxtree.expression.statement.primitivetypes.CharValue;
-import parser.syntaxtree.expression.statement.primitivetypes.DoubleValue;
-import parser.syntaxtree.expression.statement.primitivetypes.IntegerValue;
-import parser.syntaxtree.expression.statement.primitivetypes.NullValue;
-import parser.syntaxtree.expression.statement.primitivetypes.PrimitiveValue;
-import parser.syntaxtree.expression.statement.primitivetypes.PrimitiveVisitor;
-import parser.syntaxtree.expression.statement.primitivetypes.StringValue;
 
 
 /**
@@ -26,7 +26,7 @@ public class DualPrimitiveValueComparator<T extends PrimitiveValue> implements P
     @Override
     public Similarity visit(StringValue stringValue1) {
         StringValue stringValue2 = (StringValue) val2;
-        return Similarity.eval(stringValue1.getStringContent(), stringValue2.getStringContent());
+        return Similarity.eval(stringValue1.getWord(), stringValue2.getWord());
     }
 
     @Override

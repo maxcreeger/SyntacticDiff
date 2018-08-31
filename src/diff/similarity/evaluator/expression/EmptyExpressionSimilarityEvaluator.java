@@ -4,7 +4,7 @@ import diff.complexity.expression.EmptyExpressionSizer;
 import diff.similarity.ExpressionSimilarity;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.EmptyExpression;
+import lexeme.java.tree.expression.EmptyExpression;
 
 /**
  * Compares two {@link EmptyExpression}s.

@@ -2,7 +2,7 @@ package diff.similarity.evaluator;
 
 import diff.complexity.RootSizer;
 import diff.similarity.Similarity;
-import parser.syntaxtree.Root;
+import lexeme.java.tree.Root;
 
 /**
  * Compares two {@link Root}s.

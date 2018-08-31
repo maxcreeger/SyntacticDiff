@@ -43,7 +43,7 @@ public abstract class SimilarityEvaluator<T extends Showable> {
      * @return a {@link Similarity}
      */
     public Similarity orderedEval(List<T> listA, List<T> listB) {
-        return new SeriesComparator<>(this, sizer).compareOrderly(name, listA, listB);
+        return new SeriesComparator<>(this, sizer).compareOrderly(name + " / list", listA, listB);
     }
 
     /**
@@ -53,7 +53,7 @@ public abstract class SimilarityEvaluator<T extends Showable> {
      * @return a {@link Similarity}
      */
     public Similarity maximumMatch(List<T> listA, List<T> listB) {
-        return new MaximumMatching<>(this, sizer).compare(name, listA, listB);
+        return new MaximumMatching<>(this, sizer).compare(name + " / set", listA, listB);
     }
 
     /**

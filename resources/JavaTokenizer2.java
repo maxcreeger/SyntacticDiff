@@ -37,6 +37,7 @@ public class JavaTokenizer2 {
                 file.append(line.trim());
                 file.append('\n');
             }
+            file.append("a").append("c");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -5,8 +5,8 @@ import diff.similarity.ExpressionSimilarity;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
 import diff.similarity.evaluator.expression.ExpressionSimilarityEvaluator;
-import parser.syntaxtree.expression.statement.Statement;
-import parser.syntaxtree.expression.statement.operators.unary.UnaryOperator;
+import lexeme.java.tree.expression.statement.Statement;
+import lexeme.java.tree.expression.statement.operators.unary.UnaryOperator;
 
 /**
  * Compares two {@link UnaryOperator}s.

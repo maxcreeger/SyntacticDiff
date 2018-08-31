@@ -7,8 +7,8 @@ import diff.similarity.RightLeafSimilarity;
 import diff.similarity.Similarity;
 import diff.similarity.SimpleSimilarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.statement.Return;
-import parser.syntaxtree.expression.statement.Statement;
+import lexeme.java.tree.expression.statement.Return;
+import lexeme.java.tree.expression.statement.Statement;
 
 /**
  * Compares two {@link Return}s.

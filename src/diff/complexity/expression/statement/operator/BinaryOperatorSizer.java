@@ -2,7 +2,7 @@ package diff.complexity.expression.statement.operator;
 
 import diff.complexity.SyntaxSizer;
 import diff.complexity.expression.statement.StatementSizer;
-import parser.syntaxtree.expression.statement.operators.binary.BinaryOperator;
+import lexeme.java.tree.expression.statement.operators.binary.BinaryOperator;
 
 public final class BinaryOperatorSizer extends SyntaxSizer<BinaryOperator> {
     public static final BinaryOperatorSizer BINARY_OPERATOR_SIZER = new BinaryOperatorSizer();

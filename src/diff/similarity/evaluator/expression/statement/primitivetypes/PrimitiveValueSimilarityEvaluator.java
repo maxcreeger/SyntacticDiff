@@ -4,14 +4,14 @@ import diff.complexity.expression.statement.primitivetypes.PrimitiveValueSizer;
 import diff.similarity.ExpressionSimilarity;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.SimilarityEvaluator;
-import parser.syntaxtree.expression.statement.primitivetypes.BooleanValue;
-import parser.syntaxtree.expression.statement.primitivetypes.CharValue;
-import parser.syntaxtree.expression.statement.primitivetypes.DoubleValue;
-import parser.syntaxtree.expression.statement.primitivetypes.IntegerValue;
-import parser.syntaxtree.expression.statement.primitivetypes.NullValue;
-import parser.syntaxtree.expression.statement.primitivetypes.PrimitiveValue;
-import parser.syntaxtree.expression.statement.primitivetypes.PrimitiveVisitor;
-import parser.syntaxtree.expression.statement.primitivetypes.StringValue;
+import lexeme.java.tree.expression.statement.primitivetypes.BooleanValue;
+import lexeme.java.tree.expression.statement.primitivetypes.CharValue;
+import lexeme.java.tree.expression.statement.primitivetypes.DoubleValue;
+import lexeme.java.tree.expression.statement.primitivetypes.IntegerValue;
+import lexeme.java.tree.expression.statement.primitivetypes.NullValue;
+import lexeme.java.tree.expression.statement.primitivetypes.PrimitiveValue;
+import lexeme.java.tree.expression.statement.primitivetypes.PrimitiveVisitor;
+import lexeme.java.tree.expression.statement.primitivetypes.StringValue;
 
 /**
  * Compares two {@link PrimitiveValue}s.

@@ -4,7 +4,7 @@ import diff.complexity.ClassNameSizer;
 import diff.complexity.SyntaxSizer;
 import diff.complexity.expression.ExpressionSizer;
 import diff.complexity.expression.statement.VariableReferenceSizer;
-import parser.syntaxtree.expression.blocks.trycatchfinally.CatchBlock;
+import lexeme.java.tree.expression.blocks.trycatchfinally.CatchBlock;
 
 public final class CatchBlockSizer extends SyntaxSizer<CatchBlock> {
     public static final CatchBlockSizer CATCH_BLOCK_SIZER = new CatchBlockSizer();

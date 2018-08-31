@@ -7,7 +7,7 @@ import diff.similarity.evaluator.ClassNameSimilarityEvaluator;
 import diff.similarity.evaluator.QualifierSimilarityEvaluator;
 import diff.similarity.evaluator.SimilarityEvaluator;
 import diff.similarity.evaluator.expression.statement.StatementSimilarityEvaluator;
-import parser.syntaxtree.expression.VariableDeclaration;
+import lexeme.java.tree.expression.VariableDeclaration;
 
 /**
  * Compares two {@link VariableDeclaration}s.

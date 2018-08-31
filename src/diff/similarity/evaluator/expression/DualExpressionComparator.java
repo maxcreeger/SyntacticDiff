@@ -3,13 +3,13 @@ package diff.similarity.evaluator.expression;
 import diff.similarity.Similarity;
 import diff.similarity.evaluator.expression.blocks.AbstractBlockSimilarityEvaluator;
 import diff.similarity.evaluator.expression.statement.StatementSimilarityEvaluator;
+import lexeme.java.tree.expression.EmptyExpression;
+import lexeme.java.tree.expression.Expression;
+import lexeme.java.tree.expression.ExpressionVisitor;
+import lexeme.java.tree.expression.VariableDeclaration;
+import lexeme.java.tree.expression.blocks.AbstractBlock;
+import lexeme.java.tree.expression.statement.Statement;
 import lombok.AllArgsConstructor;
-import parser.syntaxtree.expression.EmptyExpression;
-import parser.syntaxtree.expression.Expression;
-import parser.syntaxtree.expression.ExpressionVisitor;
-import parser.syntaxtree.expression.VariableDeclaration;
-import parser.syntaxtree.expression.blocks.AbstractBlock;
-import parser.syntaxtree.expression.statement.Statement;
 
 /**
  * Compares to types of {@link Expression}s together. They must be of the same sub-type
