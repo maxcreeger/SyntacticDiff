@@ -25,28 +25,27 @@ public class IfBlockSimilarityEvaluator implements BlockVisitor<Similarity> {
 
     @Override
     public Similarity visit(TryCatchFinallyBlock leftTryCatchFinallyBlock) {
-        // TODO Auto-generated method stub
-        return null;
+		return TryCatchFinallyBlockSimilarityEvaluator.encloseRight(leftTryCatchFinallyBlock, rightIfBlock, new SimpleSimilarity(0, 1, "trycatchfinally", "0",
+				"if"));
     }
 
     @Override
     public Similarity visit(WhileBlock leftWhileBlock) {
         Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, "while", "0", "if");
-        Similarity simCondition = StatementSimilarityEvaluator.INSTANCE.eval(leftWhileBlock.getEvaluation(), rightIfBlock.getCondition());
-        Similarity simForThen = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftWhileBlock.getBody(), rightIfBlock.getThenExpressions());
-        Similarity simForElse = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftWhileBlock.getBody(), rightIfBlock.getElseExpressions());
-        Similarity thenSim;
-        Similarity elseSim;
-        if (simForThen.similarity() < simForElse.similarity()) {
-            thenSim = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getThenExpressions()),
-                    rightIfBlock.getThenExpressions());
-            elseSim = simForElse;
-        } else {
-            thenSim = simForThen;
-            elseSim = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getElseExpressions()),
+		Similarity condition = StatementSimilarityEvaluator.INSTANCE.eval(leftWhileBlock.getEvaluation(), rightIfBlock.getCondition());
+		// Attempt to match the "while body" with "Then Body"
+		Similarity whileThen = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftWhileBlock.getBody(), rightIfBlock.getThenExpressions());
+		Similarity nothingElse = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getElseExpressions()),
                     rightIfBlock.getElseExpressions());
-        }
-        return Similarity.add("trans-block", wrongBlockSimilarity, simCondition, thenSim, elseSim);
+		Similarity whileVersusThen = Similarity.add("trans-block", wrongBlockSimilarity, condition, whileThen, nothingElse);
+
+		// Attempt to match the "while body" with "else body"
+		Similarity nothingThen = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getThenExpressions()),
+				rightIfBlock.getThenExpressions());
+		Similarity whileElse = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftWhileBlock.getBody(), rightIfBlock.getElseExpressions());
+		Similarity whileVersusElse = Similarity.add("trans-block", wrongBlockSimilarity, condition, nothingThen, whileElse);
+		// Return
+		return Similarity.bestOf(whileVersusThen, whileVersusElse);
     }
 
     @Override
@@ -59,13 +58,59 @@ public class IfBlockSimilarityEvaluator implements BlockVisitor<Similarity> {
 
     @Override
     public Similarity visit(ForBlock leftForBlock) {
-        // TODO Auto-generated method stub
-        return null;
+		Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, "for", "0", "if");
+		Similarity init = ExpressionSimilarityEvaluator.INSTANCE.eval(leftForBlock.getInitialisation(), rightIfBlock.getCondition());
+		Similarity iter = ExpressionSimilarityEvaluator.INSTANCE.eval(leftForBlock.getIteration(), rightIfBlock.getCondition());
+		Similarity condition = ExpressionSimilarityEvaluator.INSTANCE.eval(leftForBlock.getEvaluation(), rightIfBlock.getCondition());
+		// Attempt to match the "while body" with "Then Body"
+		Similarity whileThen = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftForBlock.getBody(), rightIfBlock.getThenExpressions());
+		Similarity nothingElse = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getElseExpressions()),
+				rightIfBlock.getElseExpressions());
+		Similarity whileVersusThen = Similarity.add("trans-block", wrongBlockSimilarity, init, iter, condition, whileThen, nothingElse);
+
+		// Attempt to match the "while body" with "else body"
+		Similarity nothingThen = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getThenExpressions()),
+				rightIfBlock.getThenExpressions());
+		Similarity whileElse = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftForBlock.getBody(), rightIfBlock.getElseExpressions());
+		Similarity whileVersusElse = Similarity.add("trans-block", wrongBlockSimilarity, init, iter, condition, nothingThen, whileElse);
+		// Return
+		return Similarity.bestOf(whileVersusThen, whileVersusElse);
     }
 
     @Override
     public Similarity visit(DoWhileBlock leftDoWhileBlock) {
-        // TODO Auto-generated method stub
-        return null;
+		Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, "do", "0", "if");
+		// Attempt to match the "while body" with "Then Body"
+		Similarity condition = StatementSimilarityEvaluator.INSTANCE.eval(leftDoWhileBlock.getEvaluation(), rightIfBlock.getCondition());
+		Similarity whileThen = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftDoWhileBlock.getBody(), rightIfBlock.getThenExpressions());
+		Similarity nothingElse = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getElseExpressions()),
+				rightIfBlock.getElseExpressions());
+		Similarity whileVersusThen = Similarity.add("trans-block", wrongBlockSimilarity, condition, whileThen, nothingElse);
+
+		// Attempt to match the "while body" with "else body"
+		Similarity nothingThen = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getThenExpressions()),
+				rightIfBlock.getThenExpressions());
+		Similarity whileElse = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftDoWhileBlock.getBody(), rightIfBlock.getElseExpressions());
+		Similarity whileVersusElse = Similarity.add("trans-block", wrongBlockSimilarity, condition, nothingThen, whileElse);
+		// Return
+		return Similarity.bestOf(whileVersusThen, whileVersusElse);
+	}
+
+	@Override
+	public Similarity visit(PlaceholderBlock leftPlaceholderBlock) {
+		Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, "<nothing>", "0", "if");
+		// Attempt to match the "while body" with "Then Body"
+		Similarity whileThen = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftPlaceholderBlock.getBody(), rightIfBlock.getThenExpressions());
+		Similarity nothingElse = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getElseExpressions()),
+				rightIfBlock.getElseExpressions());
+		Similarity whileVersusThen = Similarity.add("trans-block", wrongBlockSimilarity, whileThen, nothingElse);
+
+		// Attempt to match the "while body" with "else body"
+		Similarity nothingThen = RightLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(rightIfBlock.getThenExpressions()),
+				rightIfBlock.getThenExpressions());
+		Similarity whileElse = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftPlaceholderBlock.getBody(), rightIfBlock.getElseExpressions());
+		Similarity whileVersusElse = Similarity.add("trans-block", wrongBlockSimilarity, nothingThen, whileElse);
+		// Return
+		return Similarity.bestOf(whileVersusThen, whileVersusElse);
     }
 }

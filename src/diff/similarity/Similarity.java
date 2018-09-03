@@ -132,4 +132,17 @@ public abstract class Similarity {
             }
         }
     }
+
+	public static <T extends Showable> Similarity bestOf(Similarity... sims) {
+		double bestValue = -1;
+		Similarity bestSim = new NoSimilarity();
+		for (Similarity similarity : sims) {
+			double val = similarity.similarity();
+			if (val > bestValue) {
+				bestValue = val;
+				bestSim = similarity;
+			}
+		}
+		return bestSim;
+	}
 }

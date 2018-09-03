@@ -9,6 +9,6 @@ public final class UnaryOperatorSizer extends SyntaxSizer<UnaryOperator> {
 
     @Override
     public int size(UnaryOperator obj) {
-        return StatementSizer.STATEMENT_SIZER.size(obj) + 1;
+		return StatementSizer.STATEMENT_SIZER.size(obj.getTargetedStatement()) + 1;
     }
 }

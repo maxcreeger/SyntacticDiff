@@ -70,6 +70,12 @@ public class TryCatchFinallyBlockSimilarityEvaluator implements BlockVisitor<Sim
         return encloseLeft(leftDoWhileBlock, wrongBlockSim);
     }
 
+	@Override
+	public Similarity visit(PlaceholderBlock leftPlaceholderBlock) {
+		Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, "<nothing>", "0", "trycatchfinally");
+		return encloseLeft(leftPlaceholderBlock, wrongBlockSimilarity);
+	}
+
     /**
      * Enclose a left {@link Expression} in this {@link TryCatchFinallyBlock} on the right.
      * @param leftExpression an {@link Expression}

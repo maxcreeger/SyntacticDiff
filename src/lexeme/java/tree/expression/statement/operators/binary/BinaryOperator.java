@@ -96,8 +96,17 @@ public abstract class BinaryOperator extends Operator {
         List<String> leftStr = leftHandSide.show("");
         List<String> rightStr = rightHandSide.show("");
         final String operatorSymbol = getOperatorSymbol();
-        if (leftStr.size() == 1 && rightStr.size() == 1) {
+        if (leftStr.size() == 1) {
+            if (rightStr.size() == 1) {
             return Arrays.asList(prefix + leftStr.get(0) + " " + operatorSymbol + " " + rightStr.get(0));
+        } else {
+            List<String> result = new ArrayList<>();
+                result.add(prefix + leftStr.get(0) + " " + operatorSymbol + rightStr.get(0));
+                for (int i = 1; i < rightStr.size(); i++) {
+                    result.add(prefix + rightStr.get(0));
+                }
+                return result;
+            }
         } else {
             List<String> result = new ArrayList<>();
             for (String line : leftStr) {

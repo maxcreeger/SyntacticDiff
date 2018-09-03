@@ -7,17 +7,18 @@ import lombok.Getter;
 /**
  * Simple implementation of generic symbol.
  *
- * @param <G> a grammar
+ * @param <G>
+ *            a grammar
  */
 @Getter
 @AllArgsConstructor
 public class SymbolImpl<G extends Grammar> implements Symbol<G> {
 
-    String symbol;
+	String symbol;
 
-    @Override
-    public String toString() {
-        return "(Symbol: \"" + symbol + "\")";
-    }
+	@Override
+	public String toString() {
+		return "(Symbol: \"" + symbol + "\")";
+	}
 
 }

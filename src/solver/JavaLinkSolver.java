@@ -11,6 +11,7 @@ import lexeme.java.tree.ImportStatement;
 import lexeme.java.tree.MethodDeclaration;
 import lexeme.java.tree.ParameterTypeDeclaration;
 import lexeme.java.tree.Root;
+import lexeme.java.tree.Syntax;
 import lexeme.java.tree.expression.EmptyExpression;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.ExpressionVisitor;
@@ -34,272 +35,296 @@ import lexeme.java.tree.expression.statement.StatementVisitor;
 import lexeme.java.tree.expression.statement.VariableReference;
 import lexeme.java.tree.expression.statement.operators.Operator;
 import lexeme.java.tree.expression.statement.primitivetypes.PrimitiveValue;
+import diff.similarity.evaluator.expression.blocks.PlaceholderBlock;
 
 /**
  * Class to compute stuff on Java syntax.
  */
 public class JavaLinkSolver {
 
-    public static class Link {
-        Object from;
-        Object link;
-        Object to;
+	public static class Link {
+		Object from;
+		Object link;
+		Object to;
 
-        public Link(Object from, Object link, Object to) {
-            this.from = from;
-            this.link = link;
-            this.to = to;
-        }
-    }
+		public Link(Object from, Object link, Object to) {
+			this.from = from;
+			this.link = link;
+			this.to = to;
+		}
+	}
 
-    public static List<Scope> allScopes = new ArrayList<>();
+	public static Map<Syntax, Scope> allScopes = new HashMap<>();
 
-    public class Scope {
+	public class Scope {
 
-        String name;
-        Scope superScope;
-        ClassDeclaration currentClass;
-        List<String> imports = new ArrayList<>();
-        List<ParameterTypeDeclaration> parameterTypes = new ArrayList<>();
-        List<VariableDeclaration> variables = new ArrayList<>();
-        List<ClassDeclaration> classDeclarations = new ArrayList<>();
-        Map<ClassName, ClassDeclaration> classReference = new HashMap<>();
-        Map<VariableReference, VariableDeclaration> varReference = new HashMap<>();
-        Map<SelfReference, ClassDeclaration> selfReferences = new HashMap<>();
+		private final class StatementRegisterer implements StatementVisitor<Void> {
+			@Override
+			public Void visit(VariableReference variableReference) {
+				linkVariableReferenceToVariableDeclaration(variableReference);
+				return null;
+			}
 
-        public Scope(ClassDeclaration rootClass) {
-            this.name = "root";
-            allScopes.add(this);
-            currentClass = rootClass;
-        }
+			@Override
+			public Void visit(SelfReference selfReference) {
+				addSelfReference(selfReference);
+				return null;
+			}
 
-        private Scope(String name, Scope parent, ClassDeclaration currentClass) {
-            this.name = name;
-            this.superScope = parent;
-            this.currentClass = currentClass;
-            allScopes.add(this);
-        }
+			@Override
+			public Void visit(Return return1) {
+				return1.getReturnedValue().ifPresent(val -> register(val));
+				return null;
+			}
 
-        public Scope subscope(String name) {
-            return new Scope(name, this, currentClass);
-        }
+			@Override
+			public Void visit(NewInstance newInstance) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-        public Scope subClass(String name, ClassDeclaration subClass) {
-            Scope subclassScope = new Scope(name, this, subClass);
-            subclassScope.register(subClass);
-            classDeclarations.add(subClass);
-            return subclassScope;
-        }
+			@Override
+			public Void visit(MethodInvocation methodInvocation) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-        public void linkVariableReferenceToVariableDeclaration(VariableReference variableReference) {
-            for (VariableDeclaration decl : variables) {
-                if (decl.getName().equals(variableReference.getVariableName())) {
-                    varReference.put(variableReference, decl);
-                    return;
-                }
-            }
-            if (superScope != null) {
-                superScope.linkVariableReferenceToVariableDeclaration(variableReference);
-            }
-            throw new RuntimeException("Unable to link variableReference " + variableReference);
-        }
+			@Override
+			public Void visit(ChainedAccess chainedAccess) {
+				for (Statement statement : chainedAccess.getStatements()) {
+					statement.acceptStatementVisitor(this);
+				}
+				return null;
+			}
 
-        public void addSelfReference(SelfReference selfReference) {
-            selfReferences.put(selfReference, currentClass);
-        }
+			@Override
+			public Void visit(ArrayDeclaration arrayDeclaration) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-        private void register(ImportStatement importStatement) {
-            for (String clazz : importStatement.getSuffixClasses()) {
-                imports.add(clazz);
-            }
-        }
+			@Override
+			public Void visit(PrimitiveValue primitiveValue) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-        private void register(VariableDeclaration variableDeclaration) {
-            variables.add(variableDeclaration);
-        }
+			@Override
+			public Void visit(ArrayAccess arrayAccess) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-        public List<Link> solve(Root root) {
-            Scope rootScope = new Scope(root.getClassDeclaration());
-            List<Link> links = new ArrayList<>();
-            List<ImportStatement> imports = root.getImports();
-            for (ImportStatement importStatement : imports) {
-                rootScope.register(importStatement);
-            }
-            ClassDeclaration rootClass = root.getClassDeclaration();
-            rootScope.register(rootClass); // register scope of declarations
-            return links;
-        }
+			@Override
+			public Void visit(Operator operator) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		}
 
-        public void register(ClassDeclaration classDeclaration) {
-            // Register static inner classes
-            for (ClassDeclaration innerStatic : classDeclaration.getStaticInnerClasses()) {
-                subClass("inner_static " + innerStatic.getClassName(), innerStatic);
-            }
-            // Register static fields
-            for (VariableDeclaration decl : classDeclaration.getStaticFields()) {
-                register(decl);
-            }
-            // Register static methods
-            for (MethodDeclaration method : classDeclaration.getStaticMethods()) {
-                register(method);
-            }
-            // Register inner classes
-            Scope instanceScope = staticScope.subscope("instance " + classDeclaration.getClassName().getName());
-            for (ClassDeclaration innerStatic : classDeclaration.getInnerClasses()) {
-                register(innerStatic, instanceScope);
-            }
-            // Register instance fields
-            for (VariableDeclaration decl : classDeclaration.getFields()) {
-                register(decl, instanceScope);
-            }
-            // Register methods
-            for (MethodDeclaration method : classDeclaration.getMethods()) {
-                register(method, instanceScope);
-            }
-        }
+		private final class BlockRegisterer implements BlockVisitor<Void> {
+			@Override
+			public Void visit(TryCatchFinallyBlock tryCatchFinallyBlock) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-        private void register(MethodDeclaration method) {
-            Scope methodScope = subscope("method  " + method.getName());
-            for (ParameterTypeDeclaration parameter : method.getParameters()) {
-                register(parameter, methodScope);
-            }
-            for (Expression expression : method.getExpressions()) {
-                register(expression, methodScope);
-            }
-        }
+			@Override
+			public Void visit(WhileBlock whileBlock) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-        private void register(ParameterTypeDeclaration parameter, Scope methodScope) {
-            methodScope.parameterTypes.add(parameter);
-        }
+			@Override
+			public Void visit(IfBlock ifBlock) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-        private void register(Statement expression, Scope knownScope) {
-            // TODO
-        }
+			@Override
+			public Void visit(ForBlock forBlock) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-    private void register(Expression expression, Scope knownScope) {
-        ExpressionVisitor<Void> expressionLinker = new ExpressionVisitor<Void>() {
+			@Override
+			public Void visit(DoWhileBlock doWhileBlock) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 
-            @Override
-            public Void visit(EmptyExpression emptyExpression) {
-                return null;
-            }
+			@Override
+			public Void visit(PlaceholderBlock placeholderBlock) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		}
 
-            @Override
-            public Void visit(AbstractBlock block) {
-                block.acceptBlockVisitor(new BlockVisitor<Void>() {
+		private final class ExpressionRegisterer implements ExpressionVisitor<Void> {
+			@Override
+			public Void visit(EmptyExpression emptyExpression) {
+				return null;
+			}
 
-                    @Override
-                    public Void visit(TryCatchFinallyBlock tryCatchFinallyBlock) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+			@Override
+			public Void visit(AbstractBlock block) {
+				block.acceptBlockVisitor(new BlockRegisterer());
+				return null;
+			}
 
-                    @Override
-                    public Void visit(WhileBlock whileBlock) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+			@Override
+			public Void visit(VariableDeclaration variable) {
+				Scope.this.variables.add(variable);
+				variable.getInitialAssignement().ifPresent(assignment -> Scope.this.register(assignment));
+				return null;
+			}
 
-                    @Override
-                    public Void visit(IfBlock ifBlock) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+			@Override
+			public Void visit(Statement statement) {
+				statement.acceptStatementVisitor(new StatementRegisterer());
+				return null;
+			}
+		}
 
-                    @Override
-                    public Void visit(ForBlock forBlock) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+		final String name;
+		final Scope superScope;
+		final Object scopeObject;
+		final ClassDeclaration currentClass;
+		final List<String> imports = new ArrayList<>();
+		final List<ParameterTypeDeclaration> parameterTypes = new ArrayList<>();
+		final List<VariableDeclaration> variables = new ArrayList<>();
+		final List<ClassDeclaration> classDeclarations = new ArrayList<>();
+		final Map<ClassName, ClassDeclaration> classReference = new HashMap<>();
+		final Map<VariableReference, VariableDeclaration> varReference = new HashMap<>();
+		final Map<SelfReference, ClassDeclaration> selfReferences = new HashMap<>();
 
-                    @Override
-                    public Void visit(DoWhileBlock doWhileBlock) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
-                });
-                return null;
-            }
+		public Scope(ClassDeclaration rootClass) {
+			this.name = "root";
+			this.currentClass = rootClass;
+			this.scopeObject = rootClass;
+			this.superScope = null;
+			allScopes.put(rootClass, this);
+		}
 
-            @Override
-            public Void visit(VariableDeclaration variable) {
-                knownScope.variables.add(variable);
-                variable.getInitialAssignement().ifPresent(assignment -> register(assignment, knownScope));
-                return null;
-            }
+		private Scope(String name, Scope parent, ClassDeclaration currentClass, Object scopeObject) {
+			this.name = name;
+			this.superScope = parent;
+			this.currentClass = currentClass;
+			this.scopeObject = scopeObject;
+			allScopes.put(currentClass, this);
+		}
 
-            @Override
-            public Void visit(Statement statement) {
-                statement.acceptStatementVisitor(new StatementVisitor<Void>() {
+		private Scope(String name, Scope parent, ClassDeclaration currentClass) {
+			this.name = name;
+			this.superScope = parent;
+			this.currentClass = currentClass;
+			this.scopeObject = currentClass;
+			allScopes.put(currentClass, this);
+		}
 
-                    @Override
-                    public Void visit(VariableReference variableReference) {
-                        knownScope.linkVariableReferenceToVariableDeclaration(variableReference);
-                        return null;
-                    }
+		public Scope subscope(String name) {
+			return new Scope(name, this, currentClass);
+		}
 
-                    @Override
-                    public Void visit(SelfReference selfReference) {
-                        knownScope.addSelfReference(selfReference);
-                        return null;
-                    }
+		public Scope subscope(MethodDeclaration method) {
+			return new Scope(name, this, this.currentClass, method);
+		}
 
-                    @Override
-                    public Void visit(Return return1) {
-                        return1.getReturnedValue().ifPresent(val -> register(val, knownScope));
-                        return null;
-                    }
+		public Scope subClass(String name, ClassDeclaration subClass) {
+			Scope subclassScope = new Scope(name, this, subClass);
+			subclassScope.register(subClass);
+			classDeclarations.add(subClass);
+			return subclassScope;
+		}
 
-                    @Override
-                    public Void visit(NewInstance newInstance) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+		public void linkVariableReferenceToVariableDeclaration(VariableReference variableReference) {
+			for (VariableDeclaration decl : variables) {
+				if (decl.getName().equals(variableReference.getVariableName())) {
+					varReference.put(variableReference, decl);
+					return;
+				}
+			}
+			if (superScope != null) {
+				superScope.linkVariableReferenceToVariableDeclaration(variableReference);
+			}
+			throw new RuntimeException("Unable to link variableReference " + variableReference);
+		}
 
-                    @Override
-                    public Void visit(MethodInvocation methodInvocation) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+		public void addSelfReference(SelfReference selfReference) {
+			selfReferences.put(selfReference, currentClass);
+		}
 
-                    @Override
-                    public Void visit(ChainedAccess chainedAccess) {
-                        Statement previous = chainedAccess.getStatements().get(0);
-                        knownScope.register(statement);
-                        for (int i=0; i< chainedAccess.getStatements().size(); i++) {
-                            statement
-                        }
-                        return null;
-                    }
+		private void register(ImportStatement importStatement) {
+			for (String clazz : importStatement.getSuffixClasses()) {
+				imports.add(clazz);
+			}
+		}
 
-                    @Override
-                    public Void visit(ArrayDeclaration arrayDeclaration) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+		private void register(VariableDeclaration variableDeclaration) {
+			variables.add(variableDeclaration);
+		}
 
-                    @Override
-                    public Void visit(PrimitiveValue primitiveValue) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+		public List<Link> solve(Root root) {
+			Scope rootScope = new Scope(root.getClassDeclaration());
+			List<Link> links = new ArrayList<>();
+			List<ImportStatement> imports = root.getImports();
+			for (ImportStatement importStatement : imports) {
+				rootScope.register(importStatement);
+			}
+			ClassDeclaration rootClass = root.getClassDeclaration();
+			rootScope.register(rootClass); // register scope of declarations
+			return links;
+		}
 
-                    @Override
-                    public Void visit(ArrayAccess arrayAccess) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
+		public void register(ClassDeclaration classDeclaration) {
+			// Register static inner classes
+			for (ClassDeclaration innerStatic : classDeclaration.getStaticInnerClasses()) {
+				subClass("inner_static " + innerStatic.getClassName(), innerStatic);
+			}
+			// Register static fields
+			for (VariableDeclaration decl : classDeclaration.getStaticFields()) {
+				register(decl);
+			}
+			// Register static methods
+			for (MethodDeclaration method : classDeclaration.getStaticMethods()) {
+				register(method);
+			}
+			// Register inner classes
+			Scope instanceScope = subscope("instance " + classDeclaration.getClassName().getName());
+			for (ClassDeclaration innerStatic : classDeclaration.getInnerClasses()) {
+				instanceScope.register(innerStatic);
+			}
+			// Register instance fields
+			for (VariableDeclaration decl : classDeclaration.getFields()) {
+				register(decl);
+			}
+			// Register methods
+			for (MethodDeclaration method : classDeclaration.getMethods()) {
+				instanceScope.register(method);
+			}
+		}
 
-                    @Override
-                    public Void visit(Operator operator) {
-                        // TODO Auto-generated method stub
-                        return null;
-                    }
-                });
-                return null;
-            }
-        };
-        expression.acceptExpressionVisitor(expressionLinker);
-    }
-    }
+		private void register(MethodDeclaration method) {
+			Scope methodScope = subscope("method  " + method.getName());
+			for (ParameterTypeDeclaration parameter : method.getParameters()) {
+				register(parameter);
+			}
+			for (Expression expression : method.getExpressions()) {
+				register(expression);
+			}
+		}
+
+		private void register(ParameterTypeDeclaration parameter) {
+			Scope.this.parameterTypes.add(parameter);
+		}
+
+		private void register(Statement expression) {
+			// TODO
+		}
+
+		private void register(Expression expression) {
+			ExpressionVisitor<Void> expressionLinker = new ExpressionRegisterer();
+			expression.acceptExpressionVisitor(expressionLinker);
+		}
+	}
 }

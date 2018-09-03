@@ -17,6 +17,14 @@ public abstract class SyntaxSizer<T> {
         return total;
     }
 
+	public int sizeSome(List<? extends T> objList) {
+		int total = 0;
+		for (T obj : objList) {
+			total += this.size(obj);
+		}
+		return total;
+	}
+
     public int size(T... objList) {
         int total = 0;
         for (T obj : objList) {

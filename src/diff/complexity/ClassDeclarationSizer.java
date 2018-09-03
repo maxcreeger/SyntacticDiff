@@ -11,11 +11,12 @@ public final class ClassDeclarationSizer extends SyntaxSizer<ClassDeclaration> {
         int classComplexity = ClassNameSizer.CLASS_NAME_SIZER.size(obj.getClassName());
         int fieldsComplexity = VariableDeclarationSizer.VARIABLE_DECLARATION_SIZER.size(obj.getFields());
         int innerComplexity = ClassDeclarationSizer.CLASS_DECLARATION_SIZER.size(obj.getInnerClasses());
+		int constructorComplexity = ConstructorSizer.CONSTRUCTOR_SIZER.size(obj.getConstructors()); 
         int methodsComplexity = MethodDeclarationSizer.METHOD_DECLARATION_SIZER.size(obj.getMethods());
         int qualifiersComplexity = obj.getQualifiers().size();
         int staticfieldsComplexity = VariableDeclarationSizer.VARIABLE_DECLARATION_SIZER.size(obj.getStaticFields());
         int staticInnerComplexity = ClassDeclarationSizer.CLASS_DECLARATION_SIZER.size(obj.getStaticInnerClasses());
-        return classComplexity + fieldsComplexity + innerComplexity + methodsComplexity + qualifiersComplexity + staticfieldsComplexity
+		return classComplexity + constructorComplexity + fieldsComplexity + innerComplexity + methodsComplexity + qualifiersComplexity + staticfieldsComplexity
                 + staticInnerComplexity;
     }
 }

@@ -14,66 +14,70 @@ import tokenizer.usual.GenericTokenizer.TokenBuilder;
 /**
  * Represents a number.
  *
- * @param <G> a grammar
+ * @param <G>
+ *            a grammar
  */
 @Getter
 @AllArgsConstructor
 public class Number<G extends Grammar> implements Token<G>, SingleTokenStructure<G> {
 
-    private final int num;
+	private final int num;
 
-    /**
-     * Tokenizer that reads numbers.
-     *
-     * @param <G> a grammar
-     */
-    public static class NumberTokenizer<G extends Grammar> extends GenericTokenizer<G, Number<G>> implements Tokenizer<G, Number<G>> {
+	/**
+	 * Tokenizer that reads numbers.
+	 *
+	 * @param <G>
+	 *            a grammar
+	 */
+	public static class NumberTokenizer<G extends Grammar> extends GenericTokenizer<G, Number<G>> implements Tokenizer<G, Number<G>> {
 
-        protected NumberTokenizer() {
-            super("(\\d+)", new NumberBuilder<>());
-        }
+		protected NumberTokenizer() {
+			super("(\\d+)", new NumberBuilder<>());
+		}
 
-    }
+	}
 
-    /**
-     * Typical number tokenizer, recognises integer series.
-     * @param <G> a grammar
-     * @return a tokenizer
-     */
-    public static <G extends Grammar> NumberTokenizer<G> tokenizer() {
-        return new NumberTokenizer<G>();
-    }
+	/**
+	 * Typical number tokenizer, recognises integer series.
+	 * 
+	 * @param <G>
+	 *            a grammar
+	 * @return a tokenizer
+	 */
+	public static <G extends Grammar> NumberTokenizer<G> tokenizer() {
+		return new NumberTokenizer<G>();
+	}
 
-    @Override
-    public String toString() {
-        return "(Number: \"" + num + "\")";
-    }
+	@Override
+	public String toString() {
+		return "(Number: \"" + num + "\")";
+	}
 
-    @Override
-    public String get() {
-        return Integer.toString(num);
-    }
+	@Override
+	public String get() {
+		return Integer.toString(num);
+	}
 
-    @Override
-    public TokenType getTokenType() {
-        return TokenType.WORD;
-    }
+	@Override
+	public TokenType getTokenType() {
+		return TokenType.WORD;
+	}
 
-    private static class NumberBuilder<G extends Grammar> implements TokenBuilder<G, Number<G>> {
-        @Override
-        public Number<G> build(String str) {
-            return new Number<G>(Integer.parseInt(str));
-        }
-    }
+	private static class NumberBuilder<G extends Grammar> implements TokenBuilder<G, Number<G>> {
+		@Override
+		public Number<G> build(String str) {
+			return new Number<G>(Integer.parseInt(str));
+		}
+	}
 
-    @Override
-    public <T> T accept(TokenVisitor<G, T> visitor) {
-        return visitor.visit(this);
-    }
+	@Override
+	public <T> T accept(TokenVisitor<G, T> visitor) {
+		return visitor.visit(this);
+	}
 
-    @Override
-    public Token<G> getToken() {
-        return this;
-    }
+	@Override
+	public Token<G> getToken() {
+		return this;
+	}
 
 }

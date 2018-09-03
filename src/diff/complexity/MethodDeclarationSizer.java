@@ -12,7 +12,7 @@ public final class MethodDeclarationSizer extends SyntaxSizer<MethodDeclaration>
         int qualifiersCount = method.getQualifiers().size();
         int nameSize = 1; // For
                           // name
-        int parametersComplexity = ParameterTypeDeclarationSizer.PARAMETER_TYPE__SIZER.size(method.getParameters());
+        int parametersComplexity = ParameterTypeDeclarationSizer.PARAMETER_TYPE_SIZER.size(method.getParameters());
         int expressionComplexity = ExpressionSizer.EXPRESSION_SIZER.size(method.getExpressions());
         return returnTypeComplexity + qualifiersCount + nameSize + parametersComplexity + expressionComplexity;
     }

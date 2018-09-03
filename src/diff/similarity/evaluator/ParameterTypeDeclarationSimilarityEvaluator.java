@@ -13,7 +13,7 @@ public class ParameterTypeDeclarationSimilarityEvaluator extends SimilarityEvalu
     public static final ParameterTypeDeclarationSimilarityEvaluator INSTANCE = new ParameterTypeDeclarationSimilarityEvaluator();
 
     private ParameterTypeDeclarationSimilarityEvaluator() {
-        super(ParameterTypeDeclarationSizer.PARAMETER_TYPE__SIZER, "type-param");
+        super(ParameterTypeDeclarationSizer.PARAMETER_TYPE_SIZER, "type-param");
     }
 
     public Similarity eval(ParameterTypeDeclaration params1, ParameterTypeDeclaration params2) {
