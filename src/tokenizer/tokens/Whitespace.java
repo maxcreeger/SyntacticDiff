@@ -2,6 +2,9 @@ package tokenizer.tokens;
 
 import lexer.Grammar;
 import lexer.usual.structure.SingleTokenStructure;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import tokenizer.CodeLocator.CodeLocation;
 import tokenizer.Token;
 import tokenizer.TokenType;
 import tokenizer.TokenVisitor;
@@ -14,7 +17,11 @@ import tokenizer.usual.GenericTokenizer.TokenBuilder;
  *
  * @param <G> a {@link Grammar}
  */
+@Getter
+@AllArgsConstructor
 public class Whitespace<G extends Grammar> implements Token<G>, SingleTokenStructure<G> {
+
+    final CodeLocation location;
 
     /**
      * {@link Tokenizer} which builds {@link Whitespace}s (consecutive ' 's or '\t's) from an input string.
@@ -53,8 +60,8 @@ public class Whitespace<G extends Grammar> implements Token<G>, SingleTokenStruc
 
     private static class WhitespaceBuilder<G extends Grammar> implements TokenBuilder<G, Whitespace<G>> {
         @Override
-        public Whitespace<G> build(String str) {
-            return new Whitespace<G>();
+        public Whitespace<G> build(CodeLocation code) {
+            return new Whitespace<G>(code);
         }
     }
 

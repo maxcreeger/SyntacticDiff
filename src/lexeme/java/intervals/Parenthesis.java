@@ -1,10 +1,11 @@
-package lexeme.java.tokens;
+package lexeme.java.intervals;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lexeme.IntervalToken;
 import lexeme.java.tree.JavaWhitespace;
+import tokenizer.CodeLocator.CodeBranch;
 
 public class Parenthesis implements IntervalToken {
 
@@ -14,32 +15,32 @@ public class Parenthesis implements IntervalToken {
     /**
      * Attempts to find an open parenthesis '('. <br>
      * Any subsequent whitespace is removed.
-     * @param defensiveCopy the input string (is mutated if the parenthesis is found)
+     * @param code the input string (is mutated if the parenthesis is found)
      * @return true if it was found
      */
-    public static boolean open(AtomicReference<String> defensiveCopy) {
-        Matcher open = openPattern.matcher(defensiveCopy.get());
+    public static boolean open(CodeBranch code) {
+        Matcher open = openPattern.matcher(code.getRest());
         if (!open.lookingAt()) {
             return false;
         }
-        defensiveCopy.set(defensiveCopy.get().substring(open.end()));
-        JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+        code.advance(open.end());
+        JavaWhitespace.skipWhitespaceAndComments(code);
         return true;
     }
 
     /**
      * Attempts to find a closing parenthesis ')'. <br>
      * Any subsequent whitespace is removed.
-     * @param defensiveCopy the input string (is mutated if the parenthesis is found)
+     * @param code the input string (is mutated if the parenthesis is found)
      * @return true if it was found
      */
-    public static boolean close(AtomicReference<String> defensiveCopy) {
-        Matcher open = closePattern.matcher(defensiveCopy.get());
+    public static boolean close(CodeBranch code) {
+        Matcher open = closePattern.matcher(code.getRest());
         if (!open.lookingAt()) {
             return false;
         }
-        defensiveCopy.set(defensiveCopy.get().substring(open.end()));
-        JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+        code.advance(open.end());
+        JavaWhitespace.skipWhitespaceAndComments(code);
         return true;
     }
 

@@ -11,7 +11,7 @@ import lexeme.java.tree.ImportStatement;
 import lexeme.java.tree.MethodDeclaration;
 import lexeme.java.tree.ParameterTypeDeclaration;
 import lexeme.java.tree.Root;
-import lexeme.java.tree.Syntax;
+import lexeme.java.tree.JavaSyntax;
 import lexeme.java.tree.expression.EmptyExpression;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.ExpressionVisitor;
@@ -54,7 +54,7 @@ public class JavaLinkSolver {
 		}
 	}
 
-	public static Map<Syntax, Scope> allScopes = new HashMap<>();
+	public static Map<JavaSyntax, Scope> allScopes = new HashMap<>();
 
 	public class Scope {
 

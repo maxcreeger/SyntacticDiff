@@ -3,13 +3,14 @@ package lexeme.java.tree.expression.statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lexeme.java.tree.JavaWhitespace;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents a series of '.' statement acting on other statements like <code>new Object().toString().someField</code>. <br>
@@ -22,6 +23,7 @@ public class ChainedAccess extends Statement {
     private static final Pattern beginInvocation = Pattern.compile("\\.");
 
     private final List<Statement> statements;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a {@link ChainedAccess} from a mutable input String.
@@ -29,8 +31,8 @@ public class ChainedAccess extends Statement {
      * @param inputRef the input string. If a match is found, its text representation is removed from the input string
      * @return optionally, a {@link ChainedAccess}
      */
-    public static Optional<ChainedAccess> build(Statement source, AtomicReference<String> inputRef) {
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get());
+    public static Optional<ChainedAccess> build(Statement source, CodeBranch inputRef) {
+        CodeBranch defensiveCopy = inputRef.fork();
         List<Statement> statements = new ArrayList<>();
         statements.add(source);
         while (startChaining(defensiveCopy)) {  // Expect a '.'
@@ -53,17 +55,17 @@ public class ChainedAccess extends Statement {
         if (statements.size() <= 1) {
             return Optional.empty(); // No chaining found after source
         } else {
-            inputRef.set(defensiveCopy.get());
-            return Optional.of(new ChainedAccess(statements));
+
+            return Optional.of(new ChainedAccess(statements, defensiveCopy.commit()));
         }
     }
 
-    private static boolean startChaining(AtomicReference<String> input) {
-        Matcher beginMatcher = beginInvocation.matcher(input.get());
+    private static boolean startChaining(CodeBranch input) {
+        Matcher beginMatcher = beginInvocation.matcher(input.getRest());
         if (!beginMatcher.lookingAt()) {
             return false;
         } else {
-            input.set(input.get().substring(beginMatcher.end()));
+            input.advance(beginMatcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
             return true;
         }

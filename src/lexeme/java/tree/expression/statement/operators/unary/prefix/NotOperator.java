@@ -1,7 +1,6 @@
 package lexeme.java.tree.expression.statement.operators.unary.prefix;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,6 +8,7 @@ import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.expression.statement.Statement;
 import lexeme.java.tree.expression.statement.operators.unary.UnaryOperatorVisitor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
 
 /**
  * The "not" (<code>!</code>) operator.
@@ -28,7 +28,7 @@ public class NotOperator extends PrefixUnaryOperator {
 
     private static final Pattern operatorPattern = Pattern.compile(OPERATOR_SYMBOL);
 
-    public static Optional<NotOperator> build(AtomicReference<String> input) {
+    public static Optional<NotOperator> build(CodeBranch input) {
         if (!find(input)) {
             return Optional.empty();
         }
@@ -41,12 +41,12 @@ public class NotOperator extends PrefixUnaryOperator {
 
     }
 
-    static boolean find(AtomicReference<String> input) {
-        Matcher nameMatcher = operatorPattern.matcher(input.get());
+    static boolean find(CodeBranch input) {
+        Matcher nameMatcher = operatorPattern.matcher(input.getRest());
         if (!nameMatcher.lookingAt()) {
             return false;
         }
-        input.set(input.get().substring(nameMatcher.end()));
+        input.advance(nameMatcher.end());
         JavaWhitespace.skipWhitespaceAndComments(input);
         return true;
     }

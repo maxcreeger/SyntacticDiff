@@ -3,18 +3,19 @@ package lexeme.java.tree.expression.blocks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import lexeme.java.tokens.Curvy;
-import lexeme.java.tokens.Parenthesis;
+import lexeme.java.intervals.Curvy;
+import lexeme.java.intervals.Parenthesis;
 import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.statement.Statement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import settings.SyntacticSettings;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents a for loop.<br>
@@ -30,55 +31,58 @@ public class ForBlock extends AbstractBlock {
     private final Statement evaluation;
     private final Expression iteration;
     private final List<Expression> body;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a {@link ForBlock}
      * @param inputRef the input text (is modified if the block is built)
      * @return optionally, the block
      */
-    public static Optional<ForBlock> build(AtomicReference<String> inputRef) {
+    public static Optional<ForBlock> build(CodeBranch inputRef) {
+        CodeBranch fork = inputRef.fork();
+
         // Match 'for' keyword
-        Matcher forMatcher = forPattern.matcher(inputRef.get());
+        Matcher forMatcher = forPattern.matcher(fork.getRest());
         if (!forMatcher.lookingAt()) {
             return Optional.empty();
         }
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get().substring(forMatcher.end()));
-        JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+        fork.advance(forMatcher.end());
+        JavaWhitespace.skipWhitespaceAndComments(fork);
 
         // Begin condition
-        if (!Parenthesis.open(defensiveCopy)) {
+        if (!Parenthesis.open(fork)) {
             return Optional.empty();
         }
 
         // Initialization expression
-        Optional<? extends Statement> initStatement = Statement.build(defensiveCopy);
-        if (!initStatement.isPresent() || !findEndOfExpression(defensiveCopy)) {
+        Optional<? extends Statement> initStatement = Statement.build(fork);
+        if (!initStatement.isPresent() || !findEndOfExpression(fork)) {
             return Optional.empty();
         }
 
         // Evaluation expression
-        Optional<? extends Statement> evalStatement = Statement.build(defensiveCopy);
-        if (!evalStatement.isPresent() || !findEndOfExpression(defensiveCopy)) {
+        Optional<? extends Statement> evalStatement = Statement.build(fork);
+        if (!evalStatement.isPresent() || !findEndOfExpression(fork)) {
             return Optional.empty();
         }
 
         // Iteration expression
-        Optional<? extends Statement> iterStatement = Statement.build(defensiveCopy);
-        if (!initStatement.isPresent() || !findEndOfExpression(defensiveCopy)) {
+        Optional<? extends Statement> iterStatement = Statement.build(fork);
+        if (!initStatement.isPresent() || !findEndOfExpression(fork)) {
             return Optional.empty();
         }
 
         // End of loop definition, start of body
-        if (!Parenthesis.close(defensiveCopy)) {
+        if (!Parenthesis.close(fork)) {
             return Optional.empty();
         }
 
         // 'for' instructions
         List<Expression> forExpressions = new ArrayList<>();
-        if (Curvy.open(defensiveCopy)) {
+        if (Curvy.open(fork)) {
             // 'for' Block
-            while (!Curvy.close(defensiveCopy)) {
-                Optional<? extends Expression> expr = Expression.build(defensiveCopy);
+            while (!Curvy.close(fork)) {
+                Optional<? extends Expression> expr = Expression.build(fork);
                 if (expr.isPresent()) {
                     forExpressions.add(expr.get());
                 } else {
@@ -87,16 +91,15 @@ public class ForBlock extends AbstractBlock {
             }
         } else {
             // Single 'for' expression
-            Optional<? extends Expression> expr = Expression.build(defensiveCopy);
+            Optional<? extends Expression> expr = Expression.build(fork);
             if (expr.isPresent()) {
                 forExpressions.add(expr.get());
             }
         }
 
         // Commit
-        inputRef.set(defensiveCopy.get());
         System.out.println("FOR loop detected");
-        return Optional.of(new ForBlock(initStatement.get(), evalStatement.get(), iterStatement.get(), forExpressions));
+        return Optional.of(new ForBlock(initStatement.get(), evalStatement.get(), iterStatement.get(), forExpressions, fork.commit()));
 
     }
 

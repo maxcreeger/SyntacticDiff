@@ -1,13 +1,14 @@
 package lexeme.java.tree.expression.statement.operators.binary;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.expression.statement.Statement;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents the different (!=) operator.
@@ -22,8 +23,8 @@ public class Different extends BinaryOperator {
      * @param leftHandSide lhs
      * @param rightHandSide rhs
      */
-    public Different(Statement leftHandSide, Statement rightHandSide) {
-        super(leftHandSide, rightHandSide);
+    public Different(Statement leftHandSide, Statement rightHandSide, CodeLocation location) {
+        super(leftHandSide, rightHandSide, location);
     }
 
     /**
@@ -32,28 +33,27 @@ public class Different extends BinaryOperator {
      * @param input the remaining text (is modified if the operator is built)
      * @return optionally, the operator
      */
-    public static Optional<Different> build(Statement lhs, AtomicReference<String> input) {
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(input.get());
+    public static Optional<Different> build(Statement lhs, CodeBranch input) {
+        CodeBranch fork = input.fork();
 
-        if (!find(defensiveCopy)) {
+        if (!find(fork)) {
             return Optional.empty();
         }
 
-        Optional<? extends Statement> rhs = Statement.build(defensiveCopy);
+        Optional<? extends Statement> rhs = Statement.build(fork);
         if (!rhs.isPresent()) {
             return Optional.empty();
         }
 
-        input.set(defensiveCopy.get());
-        return Optional.of(new Different(lhs, rhs.get()));
+        return Optional.of(new Different(lhs, rhs.get(), fork.commit()));
     }
 
-    private static boolean find(AtomicReference<String> input) {
-        Matcher nameMatcher = operatorPattern.matcher(input.get());
+    private static boolean find(CodeBranch input) {
+        Matcher nameMatcher = operatorPattern.matcher(input.getRest());
         if (!nameMatcher.lookingAt()) {
             return false;
         }
-        input.set(input.get().substring(nameMatcher.end()));
+        input.advance(nameMatcher.end());
         JavaWhitespace.skipWhitespaceAndComments(input);
         return true;
     }

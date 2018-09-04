@@ -3,17 +3,18 @@ package lexeme.java.tree.expression.blocks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import lexeme.java.tokens.Curvy;
-import lexeme.java.tokens.Parenthesis;
+import lexeme.java.intervals.Curvy;
+import lexeme.java.intervals.Parenthesis;
 import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.statement.Statement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents an if block, with a conditional statement and a body. May have else expressions.
@@ -28,19 +29,21 @@ public class IfBlock extends AbstractBlock {
     private final Statement condition;
     private final List<Expression> thenExpressions;
     private final List<Expression> elseExpressions;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a {@link IfBlock}
      * @param inputRef the input text (is modified if the block is built)
      * @return optionally, the block
      */
-    public static Optional<IfBlock> build(AtomicReference<String> inputRef) {
+    public static Optional<IfBlock> build(CodeBranch inputRef) {
         // Match 'if' keyword
-        Matcher ifMatcher = ifPattern.matcher(inputRef.get());
+        Matcher ifMatcher = ifPattern.matcher(inputRef.getRest());
         if (!ifMatcher.lookingAt()) {
             return Optional.empty();
         }
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get().substring(ifMatcher.end()));
+        CodeBranch defensiveCopy = inputRef.fork();
+        defensiveCopy.advance(ifMatcher.end());
         JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
 
         // Begin condition
@@ -77,7 +80,7 @@ public class IfBlock extends AbstractBlock {
         }
 
         // Maybe else block?
-        Matcher elseMatcher = elsePattern.matcher(defensiveCopy.get());
+        Matcher elseMatcher = elsePattern.matcher(defensiveCopy.getRest());
         List<Expression> elseExpressions = new ArrayList<>();
         if (elseMatcher.lookingAt()) {
             if (Curvy.open(defensiveCopy)) {
@@ -98,9 +101,8 @@ public class IfBlock extends AbstractBlock {
         }
 
         // Commit
-        inputRef.set(defensiveCopy.get());
         // System.out.println("if[then][else] block detected");
-        return Optional.of(new IfBlock(optStatement.get(), thenExpressions, elseExpressions));
+        return Optional.of(new IfBlock(optStatement.get(), thenExpressions, elseExpressions, defensiveCopy.commit()));
 
     }
 

@@ -3,13 +3,14 @@ package lexeme.java.tree.expression.blocks.trycatchfinally;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.blocks.AbstractBlock;
 import lexeme.java.tree.expression.blocks.BlockVisitor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents a Try { body }. <br>
@@ -22,26 +23,27 @@ public class TryCatchFinallyBlock extends AbstractBlock {
     private final TryBlock tryBlock;
     private final List<CatchBlock> catchBlocks;
     private Optional<FinallyBlock> finallyBlock;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a {@link TryCatchFinallyBlock}
      * @param inputRef the input text (is modified if the block is built)
      * @return optionally, the block
      */
-    public static Optional<TryCatchFinallyBlock> build(AtomicReference<String> inputRef) {
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get());
+    public static Optional<TryCatchFinallyBlock> build(CodeBranch inputRef) {
+        CodeBranch fork = inputRef.fork();
 
         // Try
-        Optional<TryBlock> tryBlock = TryBlock.build(defensiveCopy);
+        Optional<TryBlock> tryBlock = TryBlock.build(fork);
         if (!tryBlock.isPresent()) {
             return Optional.empty();
         }
 
         // Catch
-        List<CatchBlock> catches = CatchBlock.build(defensiveCopy);
+        List<CatchBlock> catches = CatchBlock.build(fork);
 
         // Finally
-        Optional<FinallyBlock> finallyBlock = FinallyBlock.build(defensiveCopy);
+        Optional<FinallyBlock> finallyBlock = FinallyBlock.build(fork);
 
         // Sanity check
         if (tryBlock.get().getTryWithResources().isEmpty() && catches.isEmpty() && !finallyBlock.isPresent()) {
@@ -50,9 +52,8 @@ public class TryCatchFinallyBlock extends AbstractBlock {
         }
 
         // Commit
-        inputRef.set(defensiveCopy.get());
         // System.out.println("try[catch][finally] block detected");
-        return Optional.of(new TryCatchFinallyBlock(tryBlock.get(), catches, finallyBlock));
+        return Optional.of(new TryCatchFinallyBlock(tryBlock.get(), catches, finallyBlock, fork.commit()));
     }
 
     @Override

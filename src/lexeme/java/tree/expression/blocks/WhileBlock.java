@@ -3,18 +3,19 @@ package lexeme.java.tree.expression.blocks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import lexeme.java.tokens.Curvy;
-import lexeme.java.tokens.Parenthesis;
+import lexeme.java.intervals.Curvy;
+import lexeme.java.intervals.Parenthesis;
 import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.statement.Statement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import settings.SyntacticSettings;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents a while(boolean expression) { ... } block.
@@ -27,43 +28,46 @@ public class WhileBlock extends AbstractBlock {
 
     private final Statement evaluation;
     private final List<Expression> body;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a {@link WhileBlock}
      * @param inputRef the input text (is modified if the block is built)
      * @return optionally, the block
      */
-    public static Optional<WhileBlock> build(AtomicReference<String> inputRef) {
+    public static Optional<WhileBlock> build(CodeBranch inputRef) {
+        CodeBranch fork = inputRef.fork();
+
         // Match 'while' keyword
-        Matcher whileMatcher = whilePattern.matcher(inputRef.get());
+        Matcher whileMatcher = whilePattern.matcher(fork.getRest());
         if (!whileMatcher.lookingAt()) {
             return Optional.empty();
         }
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get().substring(whileMatcher.end()));
-        JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+        fork.advance(whileMatcher.end());
+        JavaWhitespace.skipWhitespaceAndComments(fork);
 
         // Begin condition
-        if (!Parenthesis.open(defensiveCopy)) {
+        if (!Parenthesis.open(fork)) {
             return Optional.empty();
         }
 
         // Evaluation expression
-        Optional<? extends Statement> evalStatement = Statement.build(defensiveCopy);
+        Optional<? extends Statement> evalStatement = Statement.build(fork);
         if (!evalStatement.isPresent()) {
             return Optional.empty();
         }
 
         // End of loop definition, start of body
-        if (!Parenthesis.close(defensiveCopy)) {
+        if (!Parenthesis.close(fork)) {
             return Optional.empty();
         }
 
         // 'while' instructions
         List<Expression> whileExpressions = new ArrayList<>();
-        if (Curvy.open(defensiveCopy)) {
+        if (Curvy.open(fork)) {
             // 'while' Block
-            while (!Curvy.close(defensiveCopy)) {
-                Optional<? extends Expression> expr = Expression.build(defensiveCopy);
+            while (!Curvy.close(fork)) {
+                Optional<? extends Expression> expr = Expression.build(fork);
                 if (expr.isPresent()) {
                     whileExpressions.add(expr.get());
                 } else {
@@ -72,16 +76,14 @@ public class WhileBlock extends AbstractBlock {
             }
         } else {
             // Single 'while' expression
-            Optional<? extends Expression> expr = Expression.build(defensiveCopy);
+            Optional<? extends Expression> expr = Expression.build(fork);
             if (expr.isPresent()) {
                 whileExpressions.add(expr.get());
             }
         }
 
-        // Commit
-        inputRef.set(defensiveCopy.get());
         // System.out.println("while block detected");
-        return Optional.of(new WhileBlock(evalStatement.get(), whileExpressions));
+        return Optional.of(new WhileBlock(evalStatement.get(), whileExpressions, fork.commit()));
 
     }
 

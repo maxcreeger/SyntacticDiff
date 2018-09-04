@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lexer.Structure;
 import lexer.java.JavaLexer.JavaGrammar;
-import lexer.java.expression.statement.ClassNameLexer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents a class name.<br>
@@ -20,7 +20,7 @@ import lombok.Getter;
  */
 @AllArgsConstructor
 @Getter
-public class ClassName implements Syntax, Structure<JavaGrammar> {
+public class ClassName implements JavaSyntax, Structure<JavaGrammar> {
 
     /**
      * Primitive type Matcher
@@ -36,8 +36,6 @@ public class ClassName implements Syntax, Structure<JavaGrammar> {
     private static final Pattern separatorPattern = Pattern.compile("\\s*,\\s*");
     private static final Pattern endChevronPattern = Pattern.compile(">");
 
-    public static final ClassNameLexer LEXER = new ClassNameLexer();
-
     private final String name;
     private final List<ClassName> nestedSubParameters; // Null for N/A, empty for Type inference
     /** The number of dimensions. 0 for just a value without an array */
@@ -45,56 +43,58 @@ public class ClassName implements Syntax, Structure<JavaGrammar> {
     private final Optional<ClassName> superClass;
     private final Optional<ClassName> extendsClass;
     private final List<ClassName> implementedInterfaces;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a class name.
      * @param input the mutable input String (is modified if a class name is found)
      * @return optionally, a class name
      */
-    public static Optional<ClassName> build(AtomicReference<String> input) {
-        Matcher classNameMatcher = classNamePattern.matcher(input.get());
+    public static Optional<ClassName> build(CodeBranch input) {
+        CodeBranch local = input.fork();
+        Matcher classNameMatcher = classNamePattern.matcher(local.getRest());
         if (!classNameMatcher.lookingAt()) {
             // Not a class name!
             return Optional.empty();
         }
         String className = classNameMatcher.group(0);
         // Advancing input to end of class name
-        input.set(input.get().substring(className.length()));
-        JavaWhitespace.skipWhitespaceAndComments(input);
+        local.advance(className.length());
+        JavaWhitespace.skipWhitespaceAndComments(local);
 
         // Attempt to find some Type parameters
         List<ClassName> found = null;
-        if (openChevron(input)) {
+        if (openChevron(local)) {
             found = new ArrayList<>(); // Non null!
-            while (findParameter(input, found)) {
+            while (findParameter(local, found)) {
                 // Attempt to find a separator between parameters
-                matchSeparator(input);
+                matchSeparator(local);
             }
-            expectEndChevron(input);
+            expectEndChevron(local);
         }
 
         // Attempt to find super
-        Optional<ClassName> superClass = find(input, superPattern);
+        Optional<ClassName> superClass = find(local, superPattern);
 
         // Attempt to find extends
-        Optional<ClassName> extendsClass = find(input, extendsPattern);
+        Optional<ClassName> extendsClass = find(local, extendsPattern);
 
         // Attempt to find implements
-        List<ClassName> implementedInterfaces = findInterfaces(input);
+        List<ClassName> implementedInterfaces = findInterfaces(local);
 
         // Attempt to find a n-dimensional array
-        int arrayDimension = countArrayDimension(input);
+        int arrayDimension = countArrayDimension(local);
 
-        return Optional.of(new ClassName(className, found, arrayDimension, superClass, extendsClass, implementedInterfaces));
+        return Optional.of(new ClassName(className, found, arrayDimension, superClass, extendsClass, implementedInterfaces, local.commit()));
     }
 
-    private static Optional<ClassName> find(AtomicReference<String> input, Pattern pattern) {
-        Matcher extendsMatcher = pattern.matcher(input.get());
+    private static Optional<ClassName> find(CodeBranch input, Pattern pattern) {
+        Matcher extendsMatcher = pattern.matcher(input.getRest());
         if (extendsMatcher.lookingAt()) {
             // found super class
-            input.set(input.get().substring(extendsMatcher.end()));
+            input.advance(extendsMatcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
-            // GEt super ClassName
+            // Get super ClassName
             Optional<ClassName> optionalSuper = build(input);
             if (optionalSuper.isPresent()) {
                 return optionalSuper;
@@ -105,12 +105,12 @@ public class ClassName implements Syntax, Structure<JavaGrammar> {
         return Optional.empty();
     }
 
-    private static List<ClassName> findInterfaces(AtomicReference<String> input) {
-        Matcher extendsMatcher = implementsPattern.matcher(input.get());
+    private static List<ClassName> findInterfaces(CodeBranch input) {
+        Matcher extendsMatcher = implementsPattern.matcher(input.getRest());
         if (extendsMatcher.lookingAt()) {
 
             // found interfaces class
-            input.set(input.get().substring(extendsMatcher.end()));
+            input.advance(extendsMatcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
 
             // Now list interfaces
@@ -133,21 +133,21 @@ public class ClassName implements Syntax, Structure<JavaGrammar> {
         return new ArrayList<>();
     }
 
-    private static int countArrayDimension(AtomicReference<String> input) {
+    private static int countArrayDimension(CodeBranch input) {
         int arrayDimension = 0; // 0 by default
         while (true) {
-            Matcher arrayMatcher = arrayPattern.matcher(input.get());
+            Matcher arrayMatcher = arrayPattern.matcher(input.getRest());
             if (!arrayMatcher.lookingAt()) {
                 break;
             }
             arrayDimension++;
-            input.set(input.get().substring(arrayMatcher.end()));
+            input.advance(arrayMatcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
         }
         return arrayDimension;
     }
 
-    private static boolean findParameter(AtomicReference<String> input, List<ClassName> found) {
+    private static boolean findParameter(CodeBranch input, List<ClassName> found) {
         // Attempt to find a simple parameter name
         Optional<ClassName> typeParameter = build(input);
         if (typeParameter.isPresent()) {
@@ -159,20 +159,20 @@ public class ClassName implements Syntax, Structure<JavaGrammar> {
         }
     }
 
-    private static boolean matchSeparator(AtomicReference<String> input) {
-        Matcher separatorMatcher = separatorPattern.matcher(input.get());
+    private static boolean matchSeparator(CodeBranch input) {
+        Matcher separatorMatcher = separatorPattern.matcher(input.getRest());
         if (separatorMatcher.lookingAt()) {
-            input.set(input.get().substring(separatorMatcher.end()));
+            input.advance(separatorMatcher.end());
             return true;
         } else {
             return false;
         }
     }
 
-    private static boolean openChevron(AtomicReference<String> input) {
-        Matcher beginMatcher = beginChevronPattern.matcher(input.get());
+    private static boolean openChevron(CodeBranch input) {
+        Matcher beginMatcher = beginChevronPattern.matcher(input.getRest());
         if (beginMatcher.lookingAt()) {
-            input.set(input.get().substring(beginMatcher.group(0).length()));
+            input.advance(beginMatcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
             return true;
         } else {
@@ -180,11 +180,10 @@ public class ClassName implements Syntax, Structure<JavaGrammar> {
         }
     }
 
-    private static void expectEndChevron(AtomicReference<String> input) {
-        // Expect closing chevrons
-        Matcher endMatcher = endChevronPattern.matcher(input.get());
+    private static void expectEndChevron(CodeBranch input) {
+        Matcher endMatcher = endChevronPattern.matcher(input.getRest());
         if (endMatcher.lookingAt()) {
-            input.set(input.get().substring(endMatcher.end()));
+            input.advance(endMatcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
         } else {
             throw new RuntimeException("Could not find closing chevrons after Type parameters!");
@@ -236,7 +235,7 @@ public class ClassName implements Syntax, Structure<JavaGrammar> {
     }
 
     @Override
-    public <T> T acceptSyntaxVisitor(SyntaxVisitor<T> visitor) {
+    public <T> T acceptSyntaxVisitor(JavaSyntaxVisitor<T> visitor) {
         return visitor.visit(this);
     }
 

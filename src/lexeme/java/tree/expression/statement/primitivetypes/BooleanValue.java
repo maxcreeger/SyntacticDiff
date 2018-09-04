@@ -3,7 +3,6 @@ package lexeme.java.tree.expression.statement.primitivetypes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,6 +10,8 @@ import lexeme.java.tree.JavaWhitespace;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import settings.SyntacticSettings;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 
 /**
@@ -23,19 +24,21 @@ public class BooleanValue extends PrimitiveValue {
     private static final Pattern booleanPattern = Pattern.compile("(true)|(false)");
 
     private final boolean isTrue;
+    private final CodeLocation location;
 
     /**
      * Attempts to build the primitive.
      * @param inputRef the mutable input text (is modified if the primitive is created)
      * @return optionally, the primitive
      */
-    public static Optional<BooleanValue> build(AtomicReference<String> inputRef) {
-        Matcher stringMatcher = booleanPattern.matcher(inputRef.get());
+    public static Optional<BooleanValue> build(CodeBranch inputRef) {
+        CodeBranch fork = inputRef.fork();
+        Matcher stringMatcher = booleanPattern.matcher(fork.getRest());
         if (stringMatcher.lookingAt()) {
             boolean val = Boolean.parseBoolean(stringMatcher.group(0));
-            inputRef.set(inputRef.get().substring(stringMatcher.end()));
-            JavaWhitespace.skipWhitespaceAndComments(inputRef);
-            return Optional.of(new BooleanValue(val));
+            fork.advance(stringMatcher.end());
+            JavaWhitespace.skipWhitespaceAndComments(fork);
+            return Optional.of(new BooleanValue(val, fork.commit()));
         }
         return Optional.empty();
     }

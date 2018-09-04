@@ -3,11 +3,11 @@ package lexeme.java.tree;
 import lexeme.java.tree.expression.Expression;
 
 /**
- * Visitor of a {@link Syntax} object.
+ * Visitor of a {@link JavaSyntax} object.
  *
  * @param <T> product of the visitor
  */
-public interface SyntaxVisitor<T> {
+public interface JavaSyntaxVisitor<T> {
     /**
      * visit a {@link Root} object.
      * @param root the visited object

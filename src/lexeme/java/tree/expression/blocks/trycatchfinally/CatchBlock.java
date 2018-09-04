@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import diff.complexity.Showable;
-import lexeme.java.tokens.Curvy;
-import lexeme.java.tokens.Parenthesis;
+import lexeme.java.intervals.Curvy;
+import lexeme.java.intervals.Parenthesis;
 import lexeme.java.tree.ClassName;
 import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.expression.Expression;
@@ -18,6 +17,8 @@ import lexeme.java.tree.expression.statement.VariableReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import settings.SyntacticSettings;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents a catch block, with Exception reference, and a body.
@@ -32,13 +33,14 @@ public final class CatchBlock implements Showable {
     private final List<ClassName> exceptionTypes;
     private final VariableReference exceptionReference;
     private final List<Expression> catchExpressions;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a {@link CatchBlock}
      * @param input the input text (is modified if the block is built)
      * @return optionally, the block
      */
-    public static List<CatchBlock> build(AtomicReference<String> input) {
+    public static List<CatchBlock> build(CodeBranch input) {
         List<CatchBlock> allCatchBlocks = new ArrayList<>();
         Optional<CatchBlock> oneCatch = buildOne(input);
         while (oneCatch.isPresent()) {
@@ -48,56 +50,58 @@ public final class CatchBlock implements Showable {
         return allCatchBlocks;
     }
 
-    private static Optional<CatchBlock> buildOne(AtomicReference<String> input) {
+    private static Optional<CatchBlock> buildOne(CodeBranch input) {
+        CodeBranch fork = input.fork();
+
         // Match 'catch' keyword
-        Matcher catchMatcher = CATCH.matcher(input.get());
+        Matcher catchMatcher = CATCH.matcher(fork.getRest());
         if (!catchMatcher.lookingAt()) {
             return Optional.empty();
         }
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(input.get().substring(catchMatcher.end()));
-        JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+        fork.advance(catchMatcher.end());
+        JavaWhitespace.skipWhitespaceAndComments(fork);
 
         // Begin catch exception declaration
-        if (!Parenthesis.open(defensiveCopy)) {
+        if (!Parenthesis.open(fork)) {
             return Optional.empty();
         }
 
         // Get each class name
         List<ClassName> exceptionTypes = new ArrayList<>();
-        Optional<ClassName> exceptionType = ClassName.build(defensiveCopy);
+        Optional<ClassName> exceptionType = ClassName.build(fork);
         while (exceptionType.isPresent()) {
             exceptionTypes.add(exceptionType.get());
-            Matcher separatorMatcher = EXCEPTION_SEPARATOR.matcher(defensiveCopy.get());
+            Matcher separatorMatcher = EXCEPTION_SEPARATOR.matcher(fork.getRest());
             if (!separatorMatcher.lookingAt()) {
                 break; // No more separators
             }
-            defensiveCopy.set(defensiveCopy.get().substring(separatorMatcher.end()));
-            JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+            fork.advance(separatorMatcher.end());
+            JavaWhitespace.skipWhitespaceAndComments(fork);
         }
         if (exceptionTypes.isEmpty()) {
             return Optional.empty(); // No exception class names found
         }
 
         // Get exception var name
-        Optional<VariableReference> exceptionReference = VariableReference.build(defensiveCopy);
+        Optional<VariableReference> exceptionReference = VariableReference.build(fork);
         if (!exceptionReference.isPresent()) {
             return Optional.empty();
         }
 
         // End of exception declaration resources
-        if (!Parenthesis.close(defensiveCopy)) {
+        if (!Parenthesis.close(fork)) {
             return Optional.empty(); // Exception list not closed
         }
 
         // 'catch' Block - begin
         List<Expression> catchExpressions = new ArrayList<>();
-        if (!Curvy.open(defensiveCopy)) {
+        if (!Curvy.open(fork)) {
             return Optional.empty();
         }
 
         // 'catch' Block - content
-        while (!Curvy.close(defensiveCopy)) {
-            Optional<? extends Expression> expr = Expression.build(defensiveCopy);
+        while (!Curvy.close(fork)) {
+            Optional<? extends Expression> expr = Expression.build(fork);
             if (expr.isPresent()) {
                 catchExpressions.add(expr.get());
             } else {
@@ -105,10 +109,8 @@ public final class CatchBlock implements Showable {
             }
         }
 
-        // Commit
-        input.set(defensiveCopy.get());
         // System.out.println(">Catch block detected");
-        return Optional.of(new CatchBlock(exceptionTypes, exceptionReference.get(), catchExpressions));
+        return Optional.of(new CatchBlock(exceptionTypes, exceptionReference.get(), catchExpressions, fork.commit()));
     }
 
     // Display

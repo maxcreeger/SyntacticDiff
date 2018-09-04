@@ -1,24 +1,28 @@
 package tokenizer.tokens;
 
 import lexer.Grammar;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Simple implementation of generic symbol.
  *
- * @param <G>
- *            a grammar
+ * @param <G> a grammar
  */
 @Getter
-@AllArgsConstructor
 public class SymbolImpl<G extends Grammar> implements Symbol<G> {
 
-	String symbol;
+    final String symbol;
+    final CodeLocation location;
 
-	@Override
-	public String toString() {
-		return "(Symbol: \"" + symbol + "\")";
-	}
+    public SymbolImpl(CodeLocation code) {
+        this.symbol = code.getCode();
+        this.location = code;
+    }
+
+    @Override
+    public String toString() {
+        return "(Symbol: \"" + symbol + "\")";
+    }
 
 }

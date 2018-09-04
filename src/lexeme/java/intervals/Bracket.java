@@ -1,28 +1,29 @@
-package lexeme.java.tokens;
+package lexeme.java.intervals;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lexeme.IntervalToken;
 import lexeme.java.tree.JavaWhitespace;
+import tokenizer.CodeLocator.CodeBranch;
 
-public class Chevron implements IntervalToken {
+public class Bracket implements IntervalToken {
 
-    private static final Pattern open = Pattern.compile("^<");
-    private static final Pattern close = Pattern.compile(">");
+    private static final Pattern open = Pattern.compile("^\\[");
+    private static final Pattern close = Pattern.compile("\\]");
 
     String contentRaw;
 
     /**
-     * Attempts to find an open chevron '<'. <br>
+     * Attempts to find an open bracket '['. <br>
      * Any subsequent whitespace is removed.
-     * @param input the input string (is mutated if the chevron is found)
+     * @param input the input string (is mutated if the bracket is found)
      * @return true if it was found
      */
-    public static boolean open(AtomicReference<String> input) {
-        Matcher matcher = open.matcher(input.get());
+    public static boolean open(CodeBranch input) {
+        Matcher matcher = open.matcher(input.getRest());
         if (matcher.lookingAt()) {
-            input.set(input.get().substring(matcher.end()));
+            input.advance(matcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
             return true;
         } else {
@@ -32,15 +33,15 @@ public class Chevron implements IntervalToken {
 
 
     /**
-     * Attempts to find an closing chevron '>'. <br>
+     * Attempts to find a closing bracket ']'. <br>
      * Any subsequent whitespace is removed.
-     * @param input the input string (is mutated if the chevron is found)
+     * @param input the input string (is mutated if the bracket is found)
      * @return true if it was found
      */
-    public static boolean close(AtomicReference<String> input) {
-        Matcher matcher = close.matcher(input.get());
+    public static boolean close(CodeBranch input) {
+        Matcher matcher = close.matcher(input.getRest());
         if (matcher.lookingAt()) {
-            input.set(input.get().substring(matcher.end()));
+            input.advance(matcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
             return true;
         } else {
@@ -62,6 +63,5 @@ public class Chevron implements IntervalToken {
     public int end() {
         return contentRaw.length();
     }
-
 
 }

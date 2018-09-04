@@ -4,17 +4,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lexeme.java.tree.ClassName;
 import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.ParameterPassing;
-import lexer.java.expression.statement.NewInstanceLexer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import settings.SyntacticSettings;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents a call to a constructor "new Object(arguments...)".
@@ -25,28 +25,28 @@ public class NewInstance extends Statement {
 
     private static final Pattern newPattern = Pattern.compile("new\\s+");
 
-    public static final NewInstanceLexer LEXER = new NewInstanceLexer();
-
     private final ClassName className;
     private final ParameterPassing constructorArguments;
+    private final CodeLocation location;
 
-    public static Optional<NewInstance> build(AtomicReference<String> input) {
-        Matcher newMatcher = newPattern.matcher(input.get());
+    public static Optional<NewInstance> build(CodeBranch input) {
+        CodeBranch fork = input.fork();
+        Matcher newMatcher = newPattern.matcher(fork.getRest());
         if (!newMatcher.lookingAt()) {
             return Optional.empty();
         }
 
         // Reserved keyword 'new' has been found
-        input.set(input.get().substring(newMatcher.end()));
-        JavaWhitespace.skipWhitespaceAndComments(input);
+        fork.advance(newMatcher.end());
+        JavaWhitespace.skipWhitespaceAndComments(fork);
 
-        Optional<ClassName> className = ClassName.build(input);
+        Optional<ClassName> className = ClassName.build(fork);
         if (!className.isPresent()) {
             throw new RuntimeException("Expecting Constructor after 'new' keyword");
         }
 
-        Optional<ParameterPassing> params = ParameterPassing.build(input);
-        return Optional.of(new NewInstance(className.get(), params.get()));
+        Optional<ParameterPassing> params = ParameterPassing.build(fork);
+        return Optional.of(new NewInstance(className.get(), params.get(), fork.commit()));
     }
 
     @Override

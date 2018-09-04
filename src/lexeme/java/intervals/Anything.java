@@ -1,4 +1,4 @@
-package lexeme.java.tokens;
+package lexeme.java.intervals;
 
 import java.util.regex.Pattern;
 

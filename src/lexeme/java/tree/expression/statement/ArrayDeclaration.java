@@ -4,19 +4,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import diff.complexity.Showable;
-import lexeme.java.tokens.Bracket;
-import lexeme.java.tokens.Curvy;
+import lexeme.java.intervals.Bracket;
+import lexeme.java.intervals.Curvy;
 import lexeme.java.tree.ClassName;
 import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.expression.Expression;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * The creation of an array. May be initialized with values or left default.<br>
@@ -33,31 +34,34 @@ public class ArrayDeclaration extends Statement {
 
     private final ClassName className;
     private final ArrayInitialization init;
+    private final CodeLocation location;
 
 
-    public static Optional<ArrayDeclaration> build(AtomicReference<String> input) {
-        Matcher newMatcher = newPattern.matcher(input.get());
+    public static Optional<ArrayDeclaration> build(CodeBranch input) {
+        CodeBranch fork = input.fork();
+
+        Matcher newMatcher = newPattern.matcher(fork.getRest());
         if (!newMatcher.lookingAt()) {
             return Optional.empty();
         }
 
         // Reserved keyword 'new' has been found
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(input.get().substring(newMatcher.end()));
-        JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+        fork.advance(newMatcher.end());
+        JavaWhitespace.skipWhitespaceAndComments(fork);
 
-        Optional<ClassName> className = ClassName.build(input);
+        Optional<ClassName> className = ClassName.build(fork);
         if (!className.isPresent()) {
             return Optional.empty();
         }
 
         if (className.get().getArrayDimension() > 0) {
             // Array initialization with content: new int[][] {{2}, {1, 5}};
-            Optional<ArrayInitialization> init = discoverInitializationWithContent(input);
-            return Optional.of(new ArrayDeclaration(className.get(), init.get()));
+            Optional<ArrayInitialization> init = discoverInitializationWithContent(fork);
+            return Optional.of(new ArrayDeclaration(className.get(), init.get(), fork.commit()));
         } else {
             // Empty Array initialization : new int[2][5];
-            Optional<ArraySizeDeclaration> init = discoverEmptyInitialization(input);
-            return Optional.of(new ArrayDeclaration(className.get(), init.get()));
+            Optional<ArraySizeDeclaration> init = discoverEmptyInitialization(fork);
+            return Optional.of(new ArrayDeclaration(className.get(), init.get(), fork.commit()));
 
         }
     }
@@ -70,20 +74,20 @@ public class ArrayDeclaration extends Statement {
      * @param input the input mutable string
      * @return optionally, an {@link ArrayInitialization}
      */
-    private static Optional<ArraySizeDeclaration> discoverEmptyInitialization(AtomicReference<String> inputRef) {
+    private static Optional<ArraySizeDeclaration> discoverEmptyInitialization(CodeBranch inputRef) {
         List<Expression> arraySizes = new ArrayList<>();
         boolean keepOn = true;
-        AtomicReference<String> input = new AtomicReference<String>(inputRef.get());
+        CodeBranch fork = inputRef.fork();
         while (keepOn) {
-            boolean begin = Curvy.open(input);
+            boolean begin = Curvy.open(fork);
             if (!begin) {
                 break;
             }
-            Optional<? extends Expression> dimensionExpression = Expression.build(input);
+            Optional<? extends Expression> dimensionExpression = Expression.build(fork);
             if (!dimensionExpression.isPresent()) {
                 break;
             }
-            boolean end = Bracket.close(input);
+            boolean end = Bracket.close(fork);
             if (!end) {
                 break;
             }
@@ -93,8 +97,7 @@ public class ArrayDeclaration extends Statement {
             return Optional.empty();
         } else {
             // Commit
-            inputRef.set(input.get());
-            return Optional.of(new ArraySizeDeclaration(arraySizes.toArray(new Expression[arraySizes.size()])));
+            return Optional.of(new ArraySizeDeclaration(arraySizes.toArray(new Expression[arraySizes.size()]), fork.commit()));
         }
     }
 
@@ -105,14 +108,12 @@ public class ArrayDeclaration extends Statement {
      * @param input the input mutable string
      * @return optionally, an {@link ArrayInitialization}
      */
-    private static Optional<ArrayInitialization> discoverInitializationWithContent(AtomicReference<String> inputRef) {
-        AtomicReference<String> input = new AtomicReference<String>(inputRef.get());
-        int nbDim = discoverArrayDimension(input);
+    private static Optional<ArrayInitialization> discoverInitializationWithContent(CodeBranch inputRef) {
+        int nbDim = discoverArrayDimension(inputRef);
         if (nbDim <= 0) {
             return Optional.empty();
         } else {
-            Optional<ArrayInitialization> result = discoverContentInitialization(input, nbDim);
-            inputRef.set(input.get());
+            Optional<ArrayInitialization> result = discoverContentInitialization(inputRef, nbDim);
             return result;
         }
     }
@@ -124,21 +125,21 @@ public class ArrayDeclaration extends Statement {
      * @param input the input mutable string
      * @return the number of square bracket pairs
      */
-    private static int discoverArrayDimension(AtomicReference<String> inputRef) {
+    private static int discoverArrayDimension(CodeBranch input) {
+        CodeBranch fork = input.fork();
         // Match empty square bracket chain "[][]"
         int nbDimensions = 0;
         boolean keepOn = true;
-        AtomicReference<String> input = new AtomicReference<String>(inputRef.get());
         while (keepOn) {
-            boolean begin = Bracket.open(input);
+            boolean begin = Bracket.open(fork);
             if (!begin) {
                 break;
             }
-            Optional<? extends Expression> dimensionExpression = Expression.build(input);
+            Optional<? extends Expression> dimensionExpression = Expression.build(fork);
             if (!dimensionExpression.isPresent()) {
                 break;
             }
-            boolean end = Bracket.close(input);
+            boolean end = Bracket.close(fork);
             if (!end) {
                 break;
             }
@@ -146,7 +147,7 @@ public class ArrayDeclaration extends Statement {
         }
         if (nbDimensions > 0) {
             // Commit
-            inputRef.set(input.get());
+            fork.commit();
             return nbDimensions;
         } else {
             return -1; // Failed
@@ -160,7 +161,7 @@ public class ArrayDeclaration extends Statement {
      * @param input the input mutable string
      * @return optionally, an {@link ArrayInitialization}
      */
-    private static Optional<ArrayInitialization> discoverContentInitialization(AtomicReference<String> inputRef, int expectedDimensions) {
+    private static Optional<ArrayInitialization> discoverContentInitialization(CodeBranch inputRef, int expectedDimensions) {
         if (expectedDimensions == 0) {
             // Attempt a series of leaf statements separated by ','
             Optional<? extends Statement> leaf;
@@ -263,6 +264,7 @@ public class ArrayDeclaration extends Statement {
     public static class ArraySizeDeclaration extends ArrayInitialization {
 
         private final Expression[] dimensions;
+        private final CodeLocation location;
 
         public List<String> show(String prefix) {
             List<String> result = new ArrayList<>();
@@ -335,10 +337,10 @@ public class ArrayDeclaration extends Statement {
         }
     }
 
-    private static boolean separator(AtomicReference<String> input) {
-        Matcher matcher = separator.matcher(input.get());
+    private static boolean separator(CodeBranch input) {
+        Matcher matcher = separator.matcher(input.getRest());
         if (matcher.lookingAt()) {
-            input.set(input.get().substring(1));
+            input.advance(1);
             JavaWhitespace.skipWhitespaceAndComments(input);
             return true;
         } else {

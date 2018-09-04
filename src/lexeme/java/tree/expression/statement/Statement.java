@@ -1,17 +1,16 @@
 package lexeme.java.tree.expression.statement;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
-import lexeme.java.tokens.Parenthesis;
+import lexeme.java.intervals.Parenthesis;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.ExpressionVisitor;
 import lexeme.java.tree.expression.statement.operators.binary.BinaryOperator;
 import lexeme.java.tree.expression.statement.operators.unary.prefix.PrefixUnaryOperator;
 import lexeme.java.tree.expression.statement.primitivetypes.PrimitiveValue;
-import lexer.java.expression.statement.StatementLexer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
 
 /**
  * Represents a statement in the body of a method. Those represent entities, so can be chained with ".", be assigned or passed.
@@ -19,8 +18,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public abstract class Statement extends Expression {
-
-    public static final StatementLexer STATEMENT_LEXER = new StatementLexer();
 
     /**
      * Tells if this statement can receive a value.
@@ -33,15 +30,16 @@ public abstract class Statement extends Expression {
      * @param input the input text (will be mutated if object is built)
      * @return optionally, a Statement
      */
-    public static Optional<? extends Statement> build(AtomicReference<String> input) {// Try parenthesis grouping
+    public static Optional<? extends Statement> build(CodeBranch input) {// Try parenthesis grouping
+        CodeBranch fork = input.fork();
         // Try a prefix operator
-        Optional<? extends Statement> prefix = PrefixUnaryOperator.buildUnaryPrefix(input);
+        Optional<? extends Statement> prefix = PrefixUnaryOperator.buildUnaryPrefix(fork);
         if (prefix.isPresent()) {
             return prefix;
         }
 
         // Try a lone statement
-        Optional<? extends Statement> simple = buildSimple(input);
+        Optional<? extends Statement> simple = buildSimple(fork);
         if (!simple.isPresent()) {
             return Optional.empty();
         }
@@ -49,18 +47,19 @@ public abstract class Statement extends Expression {
         // A minimal Statement has been found!
 
         // Chain [field access / method access / array access] greedily
-        Optional<? extends Statement> chain = attemptChain(simple.get(), input);
+        Optional<? extends Statement> chain = attemptChain(simple.get(), fork);
         if (!chain.isPresent()) {
             chain = simple; // no chain, just use the simple statement
         }
 
         // Try a binary operator
-        Optional<? extends BinaryOperator> binary = BinaryOperator.build(chain.get(), input);
+        Optional<? extends BinaryOperator> binary = BinaryOperator.build(chain.get(), fork);
+        fork.commit(); // commit regardless
         if (binary.isPresent()) {
             return binary;
+        } else {
+            return chain;
         }
-
-        return chain;
     }
 
 
@@ -70,7 +69,7 @@ public abstract class Statement extends Expression {
      * @param input the input text (will be mutated if object is built)
      * @return optionally, an {@link ChainedAccess}
      */
-    public static Optional<? extends Statement> attemptChain(Statement source, AtomicReference<String> input) {
+    public static Optional<? extends Statement> attemptChain(Statement source, CodeBranch input) {
         // Whatever the simple statement is, it may be chained ?
         Optional<ChainedAccess> chain = ChainedAccess.build(source, input);
         if (chain.isPresent()) {
@@ -84,7 +83,7 @@ public abstract class Statement extends Expression {
         }
     }
 
-    private static Optional<? extends Statement> buildSimple(AtomicReference<String> input) {
+    private static Optional<? extends Statement> buildSimple(CodeBranch input) {
         if (Parenthesis.open(input)) {
             // Statement in parenthesis
             Optional<? extends Statement> statement = Statement.build(input);

@@ -4,53 +4,63 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import diff.complexity.Showable;
 import lexer.java.JavaLexer.JavaGrammar;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import settings.SyntacticSettings;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 import tokenizer.tokens.Symbol;
 
 /**
  * A Qualifier (private, public, abstract, synchronized etc).
  */
-public enum Qualifiers implements Showable, Symbol<JavaGrammar> {
+@Getter
+@AllArgsConstructor
+public class Qualifiers implements Showable, Symbol<JavaGrammar> {
 
-    /** Private-visibility for method, class or field. */
-    PRIVATE,
-    /** Protected-visibility for method, class or field. */
-    PROTECTED,
-    /** Public-visibility for method, class or field. */
-    PUBLIC,
-    /** Package-visibility for method, class or field. */
-    PACKAGE,
-    /** Static method, class or field. */
-    STATIC,
-    /** Abstract method or class. */
-    ABSTRACT,
-    /** Final method, class or field. */
-    FINAL,
-    /** Transient field. */
-    TRANSIENT,
-    /** Volatile field. */
-    VOLATILE,
-    /** Synchronized method or field. */
-    SYNCHRONIZED;
+    public static enum JavaQualifier {
+        /** Private-visibility for method, class or field. */
+        PRIVATE,
+        /** Protected-visibility for method, class or field. */
+        PROTECTED,
+        /** Public-visibility for method, class or field. */
+        PUBLIC,
+        /** Package-visibility for method, class or field. */
+        PACKAGE,
+        /** Static method, class or field. */
+        STATIC,
+        /** Abstract method or class. */
+        ABSTRACT,
+        /** Final method, class or field. */
+        FINAL,
+        /** Transient field. */
+        TRANSIENT,
+        /** Volatile field. */
+        VOLATILE,
+        /** Synchronized method or field. */
+        SYNCHRONIZED;
 
-    /**
-     * Makes a {@link QualifierDetector} which can scan a string do detect this qualifier.
-     * @return a {@link QualifierDetector}
-     */
-    public QualifierDetector makeDetector() {
-        return new QualifierDetector(this.name().toLowerCase());
+        /**
+         * Makes a {@link QualifierDetector} which can scan a string do detect this qualifier.
+         * @return a {@link QualifierDetector}
+         */
+        public QualifierDetector makeDetector() {
+            return new QualifierDetector(name().toLowerCase());
+        }
     }
+
+    JavaQualifier qualifier;
+    CodeLocation location;
 
     private static List<QualifierDetector> detectors = new ArrayList<>();
     static {
-        for (Qualifiers qualifier : Qualifiers.values()) {
+        for (JavaQualifier qualifier : JavaQualifier.values()) {
             detectors.add(qualifier.makeDetector());
         }
     }
@@ -61,15 +71,19 @@ public enum Qualifiers implements Showable, Symbol<JavaGrammar> {
      * @param input the input mutable string
      * @return a list of any qualifier found (never null, at least empty)
      */
-    public static List<Qualifiers> searchQualifiers(AtomicReference<String> input) {
+    public static List<Qualifiers> searchQualifiers(CodeBranch input) {
+        CodeBranch fork = input.fork();
         List<Qualifiers> found = new ArrayList<>();
         while (true) {
-            Optional<Qualifiers> optional = Qualifiers.detect(input);
+            Optional<Qualifiers> optional = Qualifiers.detect(fork);
             if (optional.isPresent()) {
                 found.add(optional.get());
                 continue;
             }
             break;
+        }
+        if (!found.isEmpty()) {
+            fork.commit(); // It's ok to lose this Location
         }
         return found;
     }
@@ -80,7 +94,7 @@ public enum Qualifiers implements Showable, Symbol<JavaGrammar> {
      * @param input the input mutable string
      * @return optionally, a qualifier
      */
-    public static Optional<Qualifiers> detect(AtomicReference<String> input) {
+    public static Optional<Qualifiers> detect(CodeBranch input) {
         for (QualifierDetector qualifierDetector : detectors) {
             Optional<Qualifiers> optional = qualifierDetector.build(input);
             if (optional.isPresent()) {
@@ -110,13 +124,14 @@ public enum Qualifiers implements Showable, Symbol<JavaGrammar> {
          * @param input the input mutable string
          * @return optionally, a qualifier
          */
-        public Optional<Qualifiers> build(AtomicReference<String> input) {
-            Matcher matcher = pattern.matcher(input.get());
+        public Optional<Qualifiers> build(CodeBranch input) {
+            CodeBranch qualifCode = input.fork();
+            Matcher matcher = pattern.matcher(qualifCode.getRest());
             if (matcher.lookingAt()) {
-                input.set(input.get().substring(matcher.end()));
+                qualifCode.advance(matcher.end());
                 String matchedKeyword = matcher.group(0).toUpperCase();
-                JavaWhitespace.skipWhitespaceAndComments(input);
-                return Optional.of(Qualifiers.valueOf(matchedKeyword));
+                JavaWhitespace.skipWhitespaceAndComments(qualifCode);
+                return Optional.of(new Qualifiers(JavaQualifier.valueOf(matchedKeyword), qualifCode.commit()));
             } else {
                 return Optional.empty();
             }
@@ -144,7 +159,7 @@ public enum Qualifiers implements Showable, Symbol<JavaGrammar> {
     }
 
     public String toString() {
-        return SyntacticSettings.cyan() + this.name().toLowerCase() + SyntacticSettings.reset();
+        return SyntacticSettings.cyan() + qualifier.name().toLowerCase() + SyntacticSettings.reset();
     }
 
     /**

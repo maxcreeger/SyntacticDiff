@@ -3,17 +3,20 @@ package lexeme.java.tree.expression;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import lexeme.java.tree.ClassName;
 import lexeme.java.tree.JavaWhitespace;
 import lexeme.java.tree.Qualifiers;
+import lexeme.java.tree.Qualifiers.JavaQualifier;
 import lexeme.java.tree.expression.statement.Statement;
 import lexeme.java.tree.expression.statement.VariableReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * A Variable (or field) declaration
@@ -28,47 +31,51 @@ public class VariableDeclaration extends Expression {
     private final ClassName type;
     private final String name;
     private final Optional<? extends Statement> initialAssignement;
+    private final CodeLocation location;
 
-    public static Optional<VariableDeclaration> build(AtomicReference<String> inputRef) {
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get());
+    public static Optional<VariableDeclaration> build(CodeBranch inputRef) {
+        CodeBranch fork = inputRef.fork();
 
         // Search qualifiers
-        List<Qualifiers> qualifiers = Qualifiers.searchQualifiers(defensiveCopy);
+        List<Qualifiers> qualifiers = Qualifiers.searchQualifiers(fork);
 
         // Search type
-        Optional<ClassName> optionalClassName = ClassName.build(defensiveCopy);
+        Optional<ClassName> optionalClassName = ClassName.build(fork);
         if (!optionalClassName.isPresent()) {
             return Optional.empty();
         }
         ClassName className = optionalClassName.get();
 
         // Search variableName
-        Optional<VariableReference> varName = VariableReference.build(defensiveCopy);
+        Optional<VariableReference> varName = VariableReference.build(fork);
         if (!varName.isPresent()) {
             return Optional.empty();
         }
 
         // Either this is an empty declaration, or there may be an assignment?
         Optional<? extends Statement> assignement;
-        if (findAssignment(defensiveCopy)) {
-            assignement = Statement.build(defensiveCopy);
+        if (findAssignment(fork)) {
+            assignement = Statement.build(fork);
         } else {
             assignement = Optional.empty();
         }
 
         // Variable declaration is valid, let's commit the changes to the input reference
-        inputRef.set(defensiveCopy.get());
-        return Optional.of(new VariableDeclaration(qualifiers, className, varName.get().getVariableName(), assignement));
+        return Optional.of(new VariableDeclaration(qualifiers, className, varName.get().getVariableName(), assignement, fork.commit()));
     }
 
-    private static boolean findAssignment(AtomicReference<String> input) {
-        Matcher nameMatcher = assignmentPattern.matcher(input.get());
+    private static boolean findAssignment(CodeBranch input) {
+        Matcher nameMatcher = assignmentPattern.matcher(input.getRest());
         if (!nameMatcher.lookingAt()) {
             return false;
         }
-        input.set(input.get().substring(nameMatcher.end()));
+        input.advance(nameMatcher.end());
         JavaWhitespace.skipWhitespaceAndComments(input);
         return true;
+    }
+
+    public List<JavaQualifier> getQualifierEnums() {
+        return qualifiers.stream().map(quali -> quali.getQualifier()).collect(Collectors.toList());
     }
 
     @Override

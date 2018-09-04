@@ -4,39 +4,38 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import diff.complexity.Showable;
-import lexeme.java.tokens.Parenthesis;
+import lexeme.java.intervals.Parenthesis;
 import lexeme.java.tree.expression.statement.Statement;
 import lexer.Structure;
 import lexer.java.JavaLexer.JavaGrammar;
-import lexer.java.expression.ParameterPassingLexer;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents parameters that are passed during a method invocation.
  */
+@Getter
 @AllArgsConstructor
 public class ParameterPassing implements Showable, Structure<JavaGrammar> {
 
     private static final Pattern separatorPattern = Pattern.compile(",");
 
-    public static ParameterPassingLexer LEXER = new ParameterPassingLexer();
-
-    @Getter
     private final List<Statement> parameters;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a {@link List} of Statements that are passed as method parameters inside parenthesis (objA, objB).
      * @param inputRef a mutable String, if a {@link ParameterPassing} is built then the <code>inputref</code> is mutated to remove its text representation.
      * @return optionally, a {@link ParameterPassing}
      */
-    public static Optional<ParameterPassing> build(AtomicReference<String> inputRef) {
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get());
+    public static Optional<ParameterPassing> build(CodeBranch inputRef) {
+        CodeBranch defensiveCopy = inputRef.fork();
 
         // Open parenthesis
         if (!Parenthesis.open(defensiveCopy)) {
@@ -67,17 +66,16 @@ public class ParameterPassing implements Showable, Structure<JavaGrammar> {
         }
 
         // A ParameterPassing Object can be constructed, commit changes to the input and return the object
-        inputRef.set(defensiveCopy.get());
-        return Optional.of(new ParameterPassing(arguments));
+        return Optional.of(new ParameterPassing(arguments, defensiveCopy.commit()));
     }
 
-    private static boolean delimiter(AtomicReference<String> defensiveCopy) {
-        Matcher separator = separatorPattern.matcher(defensiveCopy.get());
+    private static boolean delimiter(CodeBranch code) {
+        Matcher separator = separatorPattern.matcher(code.getRest());
         if (!separator.lookingAt()) {
             return false;
         }
-        defensiveCopy.set(defensiveCopy.get().substring(separator.end()));
-        JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+        code.advance(separator.end());
+        JavaWhitespace.skipWhitespaceAndComments(code);
         return true;
     }
 

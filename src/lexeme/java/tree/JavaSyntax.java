@@ -7,7 +7,7 @@ import lexer.java.JavaLexer.JavaGrammar;
 /**
  * Basic bloc of semantic. Could be anything that has a meaning in Java.
  */
-public interface Syntax extends Showable, Structure<JavaGrammar> {
+public interface JavaSyntax extends Showable, Structure<JavaGrammar> {
 
     /**
      * Visitor pattern.
@@ -15,6 +15,6 @@ public interface Syntax extends Showable, Structure<JavaGrammar> {
      * @param visitor the visitor
      * @return the outcome of the visit
      */
-    <T> T acceptSyntaxVisitor(SyntaxVisitor<T> visitor);
+    <T> T acceptSyntaxVisitor(JavaSyntaxVisitor<T> visitor);
 
 }

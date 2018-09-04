@@ -1,7 +1,6 @@
 package lexeme.java.tree.expression.statement.operators.unary.prefix;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,6 +9,7 @@ import lexeme.java.tree.expression.statement.Statement;
 import lexeme.java.tree.expression.statement.operators.OperatorVisitor;
 import lexeme.java.tree.expression.statement.operators.unary.UnaryOperatorVisitor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
 
 /**
  * Pre-increment operator like <code>++a</code>. Increments, then reads the value
@@ -27,7 +27,7 @@ public class PreIncrementOperator extends PrefixUnaryOperator {
 
     private static final Pattern operatorPattern = Pattern.compile("\\+\\+");
 
-    public static Optional<PreIncrementOperator> build(AtomicReference<String> input) {
+    public static Optional<PreIncrementOperator> build(CodeBranch input) {
         if (!find(input)) {
             return Optional.empty();
         }
@@ -40,12 +40,12 @@ public class PreIncrementOperator extends PrefixUnaryOperator {
 
     }
 
-    static boolean find(AtomicReference<String> input) {
-        Matcher nameMatcher = operatorPattern.matcher(input.get());
+    static boolean find(CodeBranch input) {
+        Matcher nameMatcher = operatorPattern.matcher(input.getRest());
         if (!nameMatcher.lookingAt()) {
             return false;
         }
-        input.set(input.get().substring(nameMatcher.end()));
+        input.advance(nameMatcher.end());
         JavaWhitespace.skipWhitespaceAndComments(input);
         return true;
     }

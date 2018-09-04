@@ -1,4 +1,4 @@
-package lexeme.java.tokens;
+package lexeme;
 
 import java.util.regex.Matcher;
 

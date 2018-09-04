@@ -3,13 +3,13 @@ package lexeme.java.tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import diff.complexity.Showable;
 import lexer.Structure;
 import lexer.java.JavaLexer.JavaGrammar;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
 
 /**
  * A {@link Root} Object represents a whole Java file, with package, imports, and one class definition.
@@ -27,8 +27,8 @@ public class Root implements Showable, Structure<JavaGrammar> {
      * @param wholeFile a text
      * @return optionally, a {@link Root} object
      */
-    public static Optional<Root> build(String wholeFile) {
-        AtomicReference<String> input = new AtomicReference<String>(wholeFile);
+    public static Optional<Root> build(CodeBranch wholeFile) {
+        CodeBranch input = wholeFile.fork();
         Optional<PackageDeclaration> optPackage = PackageDeclaration.build(input);
         if (!optPackage.isPresent()) {
             return Optional.empty();

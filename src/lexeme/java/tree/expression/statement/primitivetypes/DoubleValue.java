@@ -3,13 +3,14 @@ package lexeme.java.tree.expression.statement.primitivetypes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lexeme.java.tree.JavaWhitespace;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents an double literal like <code>1024.05</code>.
@@ -23,28 +24,31 @@ public class DoubleValue extends PrimitiveValue {
 
     private final double doubleValue;
     private final boolean isDouble;
+    CodeLocation location;
 
     /**
      * Attempts to build the primitive.
      * @param inputRef the mutable input text (is modified if the primitive is created)
      * @return optionally, the primitive
      */
-    public static Optional<DoubleValue> build(AtomicReference<String> inputRef) {
-        Matcher stringMatcher = numPattern1.matcher(inputRef.get());
+    public static Optional<DoubleValue> build(CodeBranch inputRef) {
+        CodeBranch fork = inputRef.fork();
+
+        Matcher stringMatcher = numPattern1.matcher(fork.getRest());
         if (stringMatcher.lookingAt()) {
             double val = Double.parseDouble(stringMatcher.group(0));
             boolean isDouble = stringMatcher.group(2).isEmpty() || stringMatcher.group(2).toLowerCase().equals("d");
-            inputRef.set(inputRef.get().substring(stringMatcher.end()));
-            JavaWhitespace.skipWhitespaceAndComments(inputRef);
-            return Optional.of(new DoubleValue(val, isDouble));
+            fork.advance(stringMatcher.end());
+            JavaWhitespace.skipWhitespaceAndComments(fork);
+            return Optional.of(new DoubleValue(val, isDouble, fork.commit()));
         }
-        stringMatcher = numPattern2.matcher(inputRef.get());
+        stringMatcher = numPattern2.matcher(fork.getRest());
         if (stringMatcher.lookingAt()) {
             double val = Double.parseDouble(stringMatcher.group(0));
             boolean isDouble = stringMatcher.group(2).isEmpty() || stringMatcher.group(2).toLowerCase().equals("d");
-            inputRef.set(inputRef.get().substring(stringMatcher.end()));
-            JavaWhitespace.skipWhitespaceAndComments(inputRef);
-            return Optional.of(new DoubleValue(val, isDouble));
+            fork.advance(stringMatcher.end());
+            JavaWhitespace.skipWhitespaceAndComments(fork);
+            return Optional.of(new DoubleValue(val, isDouble, fork.commit()));
         }
         return Optional.empty();
     }

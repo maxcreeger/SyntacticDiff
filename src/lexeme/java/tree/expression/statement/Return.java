@@ -3,15 +3,14 @@ package lexeme.java.tree.expression.statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lexeme.java.tree.JavaWhitespace;
-import lexeme.java.tree.expression.Expression;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import settings.SyntacticSettings;
+import tokenizer.CodeLocator.CodeBranch;
 
 /**
  * A return statement. May return a value, or not.
@@ -29,16 +28,15 @@ public class Return extends Statement {
      * @param input the input string (mutated if a return statement is found)
      * @return optionally, a {@link Return} statement.
      */
-    public static Optional<Return> build(AtomicReference<String> input) {
-        Matcher optReturn = returnPattern.matcher(input.get());
+    public static Optional<Return> build(CodeBranch input) {
+        Matcher optReturn = returnPattern.matcher(input.getRest());
         if (!optReturn.lookingAt()) {
             return Optional.empty();
         }
 
-        input.set(input.get().substring(optReturn.end()));
+        input.advance(optReturn.end());
         JavaWhitespace.skipWhitespaceAndComments(input);
         Optional<? extends Statement> optStatement = Statement.build(input);
-        Expression.build(input);
         return Optional.of(new Return(optStatement));
     }
 

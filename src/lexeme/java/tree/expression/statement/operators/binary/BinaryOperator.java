@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import lexeme.java.tree.expression.statement.Statement;
 import lexeme.java.tree.expression.statement.operators.Operator;
 import lexeme.java.tree.expression.statement.operators.OperatorVisitor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Represents a binary operator like <code>+</code>.
@@ -21,6 +22,7 @@ public abstract class BinaryOperator extends Operator {
 
     protected final Statement leftHandSide;
     protected final Statement rightHandSide;
+    CodeLocation location;
 
     /**
      * Attempts to build a {@link BinaryOperator} on from an input text, on a known left hand side {@link Statement}.
@@ -28,7 +30,7 @@ public abstract class BinaryOperator extends Operator {
      * @param input the mutable input text (is modified if the object is built)
      * @return optionally, a {@link BinaryOperator}
      */
-    public static Optional<? extends BinaryOperator> build(Statement leftHandSide, AtomicReference<String> input) {
+    public static Optional<? extends BinaryOperator> build(Statement leftHandSide, CodeBranch input) {
 
         Optional<? extends BinaryOperator> opt = Addition.build(leftHandSide, input);
         if (opt.isPresent()) {
@@ -98,9 +100,9 @@ public abstract class BinaryOperator extends Operator {
         final String operatorSymbol = getOperatorSymbol();
         if (leftStr.size() == 1) {
             if (rightStr.size() == 1) {
-            return Arrays.asList(prefix + leftStr.get(0) + " " + operatorSymbol + " " + rightStr.get(0));
-        } else {
-            List<String> result = new ArrayList<>();
+                return Arrays.asList(prefix + leftStr.get(0) + " " + operatorSymbol + " " + rightStr.get(0));
+            } else {
+                List<String> result = new ArrayList<>();
                 result.add(prefix + leftStr.get(0) + " " + operatorSymbol + rightStr.get(0));
                 for (int i = 1; i < rightStr.size(); i++) {
                     result.add(prefix + rightStr.get(0));

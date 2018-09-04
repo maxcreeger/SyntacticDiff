@@ -1,12 +1,11 @@
 package lexeme.java.tree.expression;
 
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import lexeme.java.tree.expression.VariableDeclaration;
+import tokenizer.CodeLocator;
 
 /** JUnit test. */
 public class VariableDeclarationTest {
@@ -15,18 +14,17 @@ public class VariableDeclarationTest {
     @Test
     public void testBuildFail() {
         final String str = "erkgjl!mq<>";
-        final AtomicReference<String> inputRef = new AtomicReference<String>(str);
-        Optional<VariableDeclaration> opt = VariableDeclaration.build(inputRef);
+        Optional<VariableDeclaration> opt = VariableDeclaration.build(new CodeLocator(str).branch());
         Assert.assertFalse(opt.isPresent());
         // input unchanged
-        Assert.assertEquals(inputRef.get(), str);
+        Assert.assertEquals(str, str);
     }
 
     /** JUnit test. */
     @Test
     public void testBuildSimple() {
-        final AtomicReference<String> inputRef = new AtomicReference<String>("String str;rest");
-        Optional<VariableDeclaration> opt = VariableDeclaration.build(inputRef);
+        final String str = "String str;rest";
+        Optional<VariableDeclaration> opt = VariableDeclaration.build(new CodeLocator(str).branch());
 
         // Assertions
         Assert.assertTrue(opt.isPresent());
@@ -36,14 +34,14 @@ public class VariableDeclarationTest {
         Assert.assertEquals(opt.get().getType().getName(), "String");
 
         // Input mutated
-        Assert.assertEquals(";rest", inputRef.get());
+        Assert.assertEquals(";rest", str);
     }
 
     /** JUnit test. */
     @Test
     public void testBuildWithInit() {
-        final AtomicReference<String> inputRef = new AtomicReference<String>("String str = \"toto\";rest");
-        Optional<VariableDeclaration> opt = VariableDeclaration.build(inputRef);
+        final String str = "String str = \"toto\";rest";
+        Optional<VariableDeclaration> opt = VariableDeclaration.build(new CodeLocator(str).branch());
 
         // Assertions
         Assert.assertTrue(opt.isPresent());
@@ -53,6 +51,6 @@ public class VariableDeclarationTest {
         Assert.assertEquals(opt.get().getType().getName(), "String");
 
         // Input mutated
-        Assert.assertEquals(";rest", inputRef.get());
+        Assert.assertEquals(";rest", str);
     }
 }

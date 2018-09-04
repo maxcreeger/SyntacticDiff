@@ -3,12 +3,13 @@ package lexeme.java.tree.expression.statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * An object's reference to itself or to its super self.<br>
@@ -22,6 +23,7 @@ public class SelfReference extends Statement {
     private static final Pattern superPattern = Pattern.compile("super");
 
     private final boolean isThis;
+    private final CodeLocation location;
 
     @Override
     public boolean isAssignable() {
@@ -33,17 +35,18 @@ public class SelfReference extends Statement {
      * @param input the input string. Is mutated if a self reference is found
      * @return optionally, a self reference
      */
-    public static Optional<SelfReference> build(AtomicReference<String> input) {
-        Matcher thisMatcher = thisPattern.matcher(input.get());
+    public static Optional<SelfReference> build(CodeBranch input) {
+        CodeBranch fork = input.fork();
+        Matcher thisMatcher = thisPattern.matcher(fork.getRest());
         if (thisMatcher.lookingAt()) {
-            input.set(input.get().substring(thisMatcher.end()));
-            return Optional.of(new SelfReference(true));
+            fork.advance(thisMatcher.end());
+            return Optional.of(new SelfReference(true, fork.commit()));
         }
 
-        Matcher superMatcher = superPattern.matcher(input.get());
+        Matcher superMatcher = superPattern.matcher(fork.getRest());
         if (superMatcher.lookingAt()) {
-            input.set(input.get().substring(superMatcher.end()));
-            return Optional.of(new SelfReference(false));
+            fork.advance(superMatcher.end());
+            return Optional.of(new SelfReference(false, fork.commit()));
         }
 
         return Optional.empty();

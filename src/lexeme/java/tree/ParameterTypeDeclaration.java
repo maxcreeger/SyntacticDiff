@@ -3,17 +3,18 @@ package lexeme.java.tree;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import diff.complexity.Showable;
-import lexeme.java.tokens.Parenthesis;
+import lexeme.java.intervals.Parenthesis;
 import lexeme.java.tree.expression.statement.VariableReference;
 import lexer.Structure;
 import lexer.java.JavaLexer.JavaGrammar;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Declaration of parameters type declarations like in {@code List<String>}.
@@ -27,14 +28,15 @@ public class ParameterTypeDeclaration implements Showable, Structure<JavaGrammar
     private final List<Qualifiers> qualifiers;
     private final ClassName type;
     private final String name;
+    private final CodeLocation location;
 
     /**
      * Attempts to Build a number of sequential parameter declarations
      * @param inputRef the input text
      * @return optionally, a {@link List} of {@link ParameterTypeDeclaration} (never an empty list)
      */
-    public static Optional<List<ParameterTypeDeclaration>> buildSeries(AtomicReference<String> inputRef) {
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get());
+    public static Optional<List<ParameterTypeDeclaration>> buildSeries(CodeBranch inputRef) {
+        CodeBranch defensiveCopy = inputRef.fork();
 
         // Open parenthesis
         if (!Parenthesis.open(defensiveCopy)) {
@@ -64,7 +66,7 @@ public class ParameterTypeDeclaration implements Showable, Structure<JavaGrammar
             throw new RuntimeException("Expecting parameters or closing parenthesis in method invocation");
         }
 
-        inputRef.set(defensiveCopy.get());
+        defensiveCopy.commit(); // it's ok to lose the Location of the full list
         return Optional.of(declaredParameters);
     }
 
@@ -73,8 +75,8 @@ public class ParameterTypeDeclaration implements Showable, Structure<JavaGrammar
      * @param inputRef the mutable input (is modified if a parameter declaration is indeed found)
      * @return optionally, a {@link ParameterTypeDeclaration}
      */
-    public static Optional<ParameterTypeDeclaration> build(AtomicReference<String> inputRef) {
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get());
+    public static Optional<ParameterTypeDeclaration> build(CodeBranch inputRef) {
+        CodeBranch defensiveCopy = inputRef.fork();
 
         // Search qualifiers
         List<Qualifiers> qualifiers = new ArrayList<>();
@@ -101,17 +103,16 @@ public class ParameterTypeDeclaration implements Showable, Structure<JavaGrammar
         }
 
         // Variable declaration is valid, let's commit the changes to the input reference
-        inputRef.set(defensiveCopy.get());
-        return Optional.of(new ParameterTypeDeclaration(qualifiers, className, parameter.get().getVariableName()));
+        return Optional.of(new ParameterTypeDeclaration(qualifiers, className, parameter.get().getVariableName(), defensiveCopy.commit()));
     }
 
-    private static boolean delimiter(AtomicReference<String> defensiveCopy) {
-        Matcher separator = separatorPattern.matcher(defensiveCopy.get());
+    private static boolean delimiter(CodeBranch code) {
+        Matcher separator = separatorPattern.matcher(code.getRest());
         if (!separator.lookingAt()) {
             return false;
         }
-        defensiveCopy.set(defensiveCopy.get().substring(separator.end()));
-        JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
+        code.advance(separator.end());
+        JavaWhitespace.skipWhitespaceAndComments(code);
         return true;
     }
 

@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Random;
 
 import lexeme.java.tree.Root;
+import tokenizer.CodeLocator;
 
 /**
  * Tokenizes a String input into a series of well-known Java tokens.
@@ -47,7 +48,7 @@ public class JavaTokenizer {
      * @return the {@link Root} Object
      */
     public Root tokenize() {
-        Optional<Root> root = Root.build(file);
+        Optional<Root> root = Root.build(new CodeLocator(file).branch());
         System.out.println("done1");
         return root.get();
     }
@@ -57,7 +58,7 @@ public class JavaTokenizer {
      * @return something
      */
     public Root tokenize2() {
-        Optional<Root> root = Root.build(file);
+        Optional<Root> root = Root.build(new CodeLocator(file).branch());
         System.out.println("done2");
         boolean b = new Random().nextBoolean();
         while (b) {

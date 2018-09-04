@@ -4,14 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import lexeme.java.tree.ParameterPassing;
 import lexeme.java.tree.JavaWhitespace;
+import lexeme.java.tree.ParameterPassing;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
+import tokenizer.CodeLocator.CodeLocation;
 
 /**
  * Method invocation like obj.doSomething().
@@ -24,21 +25,22 @@ public class MethodInvocation extends Statement {
 
     private final String methodName;
     private final ParameterPassing arguments;
+    private final CodeLocation location;
 
     /**
      * Attempts to build a method invocation.
      * @param inputRef the input text (will be mutated if object is built)
      * @return optionally, a {@link MethodInvocation}
      */
-    public static Optional<MethodInvocation> build(AtomicReference<String> inputRef) {
-        AtomicReference<String> defensiveCopy = new AtomicReference<String>(inputRef.get());
+    public static Optional<MethodInvocation> build(CodeBranch inputRef) {
+        CodeBranch defensiveCopy = inputRef.fork();
 
         // Method name
-        Matcher methodName = methodNamePattern.matcher(defensiveCopy.get());
+        Matcher methodName = methodNamePattern.matcher(defensiveCopy.getRest());
         if (!methodName.lookingAt()) {
             return Optional.empty();
         }
-        defensiveCopy.set(defensiveCopy.get().substring(methodName.end()));
+        defensiveCopy.advance(methodName.end());
         JavaWhitespace.skipWhitespaceAndComments(defensiveCopy);
 
         // Arguments in parenthesis
@@ -46,8 +48,7 @@ public class MethodInvocation extends Statement {
         if (!arguments.isPresent()) {
             return Optional.empty();
         }
-        inputRef.set(defensiveCopy.get());
-        return Optional.of(new MethodInvocation(methodName.group(0), arguments.get()));
+        return Optional.of(new MethodInvocation(methodName.group(0), arguments.get(), defensiveCopy.commit()));
     }
 
     @Override

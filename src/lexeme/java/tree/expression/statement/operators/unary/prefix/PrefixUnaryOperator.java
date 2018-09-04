@@ -2,11 +2,11 @@ package lexeme.java.tree.expression.statement.operators.unary.prefix;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import lexeme.java.tree.expression.statement.Statement;
 import lexeme.java.tree.expression.statement.operators.unary.UnaryOperator;
 import lombok.Getter;
+import tokenizer.CodeLocator.CodeBranch;
 
 /**
  * Represents a prefix unary operator like <code>++a</code> or <code>!isEmpty()</code>.
@@ -23,7 +23,7 @@ public abstract class PrefixUnaryOperator extends UnaryOperator {
      * @param input the mutable input text (is modified if the object is built)
      * @return optionally, the operator
      */
-    public static Optional<? extends PrefixUnaryOperator> buildUnaryPrefix(AtomicReference<String> input) {
+    public static Optional<? extends PrefixUnaryOperator> buildUnaryPrefix(CodeBranch input) {
         Optional<? extends PrefixUnaryOperator> opt = NotOperator.build(input);
         if (opt.isPresent()) {
             return opt;
