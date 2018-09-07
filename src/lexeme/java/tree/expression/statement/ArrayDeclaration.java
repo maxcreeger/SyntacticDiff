@@ -54,7 +54,7 @@ public class ArrayDeclaration extends Statement {
             return Optional.empty();
         }
 
-        if (className.get().getArrayDimension() > 0) {
+        if (className.get().getArrayDimension().getDimension() > 0) {
             // Array initialization with content: new int[][] {{2}, {1, 5}};
             Optional<ArrayInitialization> init = discoverInitializationWithContent(fork);
             return Optional.of(new ArrayDeclaration(className.get(), init.get(), fork.commit()));

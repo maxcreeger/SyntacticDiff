@@ -17,7 +17,7 @@ public class JavaTokenizer2 {
     float fiveF = 5f;
     char achar = 'a';
     char escapedN = '\n';
-
+    //public String unmatchable = "unmatchable!!!";
     private final String file;
 
     /**

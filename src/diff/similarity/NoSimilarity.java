@@ -20,4 +20,9 @@ public class NoSimilarity extends SimpleSimilarity {
     boolean isEmpty() {
         return true;
     }
+
+    @Override
+    public <T> T accept(SimilarityVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
 }

@@ -23,10 +23,10 @@ import lombok.Getter;
  * @param <T> the expected type of the objects, which must be {@link Showable}
  */
 @AllArgsConstructor
-public class MaximumMatching<T extends Showable> {
+public class MaximumMatching<S extends Showable> {
 
-    private final SimilarityEvaluator<T> similarityEvaluator;
-    private final SyntaxSizer<T> sizer;
+    private final SimilarityEvaluator<S> similarityEvaluator;
+    private final SyntaxSizer<S> sizer;
 
     /**
      * Creates a comparison of two sets of items, matching the best it can (no order is respected)
@@ -35,13 +35,13 @@ public class MaximumMatching<T extends Showable> {
      * @param list2 the right side
      * @return a Similarity analysis
      */
-    public Similarity compare(String name, List<T> list1, List<T> list2) {
-        Map<T, Map<T, Similarity>> matrix = new HashMap<>();
+    public Similarity compare(String name, List<S> list1, List<S> list2) {
+        Map<S, Map<S, Similarity>> matrix = new HashMap<>();
         // Build all comparisons once
-        for (T obj1 : list1) {
-            HashMap<T, Similarity> mapI = new HashMap<>();
+        for (S obj1 : list1) {
+            HashMap<S, Similarity> mapI = new HashMap<>();
             matrix.put(obj1, mapI);
-            for (T obj2 : list2) {
+            for (S obj2 : list2) {
                 Similarity sim = similarityEvaluator.eval(obj1, obj2);
                 mapI.put(obj2, sim);
             }
@@ -49,32 +49,32 @@ public class MaximumMatching<T extends Showable> {
         return maximumMatch(name, matrix, list1, list2);
     }
 
-    private Similarity maximumMatch(String name, Map<T, Map<T, Similarity>> matrix, List<T> list1, List<T> list2) {
+    private Similarity maximumMatch(String name, Map<S, Map<S, Similarity>> matrix, List<S> list1, List<S> list2) {
         return Similarity.add(name, maximumMatchRec(matrix, list1, list2));
     }
 
     // Recursive
-    private List<Similarity> maximumMatchRec(Map<T, Map<T, Similarity>> matrix, List<T> list1, List<T> list2) {
+    private List<Similarity> maximumMatchRec(Map<S, Map<S, Similarity>> matrix, List<S> list1, List<S> list2) {
         if (list1.isEmpty() || list2.isEmpty()) {
             List<Similarity> loners = new ArrayList<>();
-            for (T t : list1) {
-                loners.add(new LeftLeafSimilarity<T>(sizer.size(t), t));
+            for (S t : list1) {
+                loners.add(new LeftLeafSimilarity<S>(sizer.size(t), t));
             }
-            for (T t : list2) {
-                loners.add(new RightLeafSimilarity<T>(sizer.size(t), t));
+            for (S t : list2) {
+                loners.add(new RightLeafSimilarity<S>(sizer.size(t), t));
             }
             return loners;
         }
         List<Similarity> bestMatch = null;
         // Make first pair
         for (int i = 0; i < list1.size(); i++) {
-            T obj1 = list1.get(i);
-            List<T> ommitI = new ArrayList<>(list1);
+            S obj1 = list1.get(i);
+            List<S> ommitI = new ArrayList<>(list1);
             ommitI.remove(i);
             for (int j = 0; j < list2.size(); j++) {
-                List<T> ommitJ = new ArrayList<>(list2);
+                List<S> ommitJ = new ArrayList<>(list2);
                 ommitJ.remove(j);
-                T obj2 = list2.get(j);
+                S obj2 = list2.get(j);
                 Similarity sim12 = matrix.get(obj1).get(obj2);
                 Similarity matchIJ = sim12;
 
@@ -136,6 +136,29 @@ public class MaximumMatching<T extends Showable> {
                     @Override
                     public String toString() {
                         return "<" + similarity() + "=" + obj1 + " / " + obj2 + ">";
+                    }
+
+                    @Override
+                    public <R> R accept(SimilarityVisitor<R> visitor) {
+                        return null;
+                    }
+
+                    @Override
+                    public Showable showLeft() {
+                        // TODO Auto-generated method stub
+                        return null;
+                    }
+
+                    @Override
+                    public Showable showRight() {
+                        // TODO Auto-generated method stub
+                        return null;
+                    }
+
+                    @Override
+                    public List<Similarity> subSimilarities() {
+                        // TODO Auto-generated method stub
+                        return null;
                     }
 
                 };

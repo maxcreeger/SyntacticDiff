@@ -6,24 +6,34 @@ import java.util.List;
 import java.util.Optional;
 
 import diff.complexity.Showable;
+import diff.similarity.CompositeSimilarity.AggregateShowable;
+import lombok.Getter;
 
 /**
  * Comparison analysis between nothing on the left, and a right side code.
  *
- * @param <T> the type of object analyzed on the right
+ * @param <S> the type of object analyzed on the right
  */
-public class RightLeafSimilarity<T extends Showable> extends Similarity {
+@Getter
+public class RightLeafSimilarity<S extends Showable> extends Similarity {
 
-    protected final List<T> obj2;
+    public static final class NoShowable implements Showable {
+        @Override
+        public List<String> show(String prefix) {
+            return new ArrayList<>();
+        }
+    }
+
+    protected final List<S> obj2;
 
     /**
      * Build a similarity analysis between nothing on the left and an optional right Object.
-     * @param <T> the type of object analyzed
+     * @param <S> the type of object analyzed
      * @param amount the size
      * @param optionalObj2 the optional right object
      * @return a {@link Similarity}
      */
-    public static <T extends Showable> Similarity build(int amount, Optional<T> optionalObj2) {
+    public static <S extends Showable> Similarity build(int amount, Optional<S> optionalObj2) {
         if (optionalObj2.isPresent()) {
             return new RightLeafSimilarity<>(amount, optionalObj2.get());
         } else {
@@ -34,12 +44,12 @@ public class RightLeafSimilarity<T extends Showable> extends Similarity {
     /**
      * Build a similarity analysis between nothing on the left and a series of Objects on the right.<br>
      * If the list is empty, then a {@link NoSimilarity} object is returned.
-     * @param <T> the type of object analyzed
+     * @param <S> the type of object analyzed
      * @param amount the size
      * @param obj2 the left objects
      * @return a {@link Similarity}
      */
-    public static <T extends Showable> Similarity build(int amount, List<T> obj2) {
+    public static <S extends Showable> Similarity build(int amount, List<S> obj2) {
         if (obj2.isEmpty()) {
             return new NoSimilarity();
         } else {
@@ -52,7 +62,7 @@ public class RightLeafSimilarity<T extends Showable> extends Similarity {
      * @param amount the size
      * @param obj2 the right object
      */
-    public RightLeafSimilarity(int amount, T obj2) {
+    public RightLeafSimilarity(int amount, S... obj2) {
         super(0, amount);
         this.obj2 = Arrays.asList(obj2);
     }
@@ -62,7 +72,7 @@ public class RightLeafSimilarity<T extends Showable> extends Similarity {
      * @param amount the size
      * @param obj2 the left objects
      */
-    private RightLeafSimilarity(int amount, List<T> obj2) {
+    private RightLeafSimilarity(int amount, List<S> obj2) {
         super(0, amount);
         this.obj2 = obj2;
     }
@@ -70,7 +80,7 @@ public class RightLeafSimilarity<T extends Showable> extends Similarity {
     @Override
     public List<String[]> show(String prefix) {
         List<String[]> result = new ArrayList<>();
-        for (T obj : obj2) {
+        for (S obj : obj2) {
             for (String line : obj.show(prefix)) {
                 result.add(new String[] {prefix + "<Nothing>", "RIGHT", line});
             }
@@ -81,5 +91,26 @@ public class RightLeafSimilarity<T extends Showable> extends Similarity {
     @Override
     public String toString() {
         return "<Right only=" + obj2 + ">";
+    }
+
+    @Override
+    public <R> R accept(SimilarityVisitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Showable showLeft() {
+        return new NoShowable();
+    }
+
+    @Override
+    public Showable showRight() {
+        return new AggregateShowable((List<Showable>) obj2);
+    }
+
+    @Override
+    public List<Similarity> subSimilarities() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

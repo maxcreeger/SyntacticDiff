@@ -10,6 +10,7 @@ import diff.similarity.NoSimilarity;
 import diff.similarity.RightLeafSimilarity;
 import diff.similarity.Similarity;
 import lexeme.java.tree.ClassName;
+import lexeme.java.tree.ClassName.ArrayDimension;
 
 /**
  * Compares two {@link ClassName}s.
@@ -29,7 +30,7 @@ public class ClassNameSimilarityEvaluator extends SimilarityEvaluator<ClassName>
         if (class1.getArrayDimension() == class2.getArrayDimension()) {
             dimSimilarity = new NoSimilarity();
         } else {
-            dimSimilarity = new LeafSimilarity<Integer>(0, 1, class1.getArrayDimension(), class2.getArrayDimension()) {
+            dimSimilarity = new LeafSimilarity<ArrayDimension>(0, 1, class1.getArrayDimension(), class2.getArrayDimension()) {
 
                 @Override
                 public List<String[]> show(String prefix) {

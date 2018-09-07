@@ -5,12 +5,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import diff.complexity.Showable;
+import diff.similarity.CompositeSimilarity.AggregateShowable;
+import lombok.Getter;
 
 /**
  * Comparison analysis between a left side code, and nothing on the right.
  *
  * @param <T> the type of object analyzed on the left
  */
+@Getter
 public class LeftLeafSimilarity<T extends Showable> extends Similarity {
 
     protected final List<T> obj1;
@@ -64,5 +67,27 @@ public class LeftLeafSimilarity<T extends Showable> extends Similarity {
     @Override
     public String toString() {
         return "<Left only:" + obj1 + ">";
+    }
+
+    @Override
+    public <R> R accept(SimilarityVisitor<R> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public Showable showLeft() {
+        return new AggregateShowable((List<Showable>) obj1);
+    }
+
+    @Override
+    public Showable showRight() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<Similarity> subSimilarities() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

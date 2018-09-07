@@ -22,6 +22,12 @@ public abstract class Similarity {
     private final double same;
     private final int amount;
 
+    public abstract Showable showLeft();
+
+    public abstract Showable showRight();
+
+    public abstract List<Similarity> subSimilarities();
+
     /**
      * Return the similarity rate.
      * @return the similarity rate (1.0 is exact similarity)
@@ -101,7 +107,7 @@ public abstract class Similarity {
      * @param strB string 2
      * @return distance : 0 (completely different) ... 1 (all characters matching))
      */
-    public static LeafSimilarity<String> eval(String strA, String strB) {
+    public static StringSimilarity eval(String strA, String strB) {
         int dist = new Levenshtein(strA, strB).computeDistance();
         int maxLen = Math.max(strA.length(), strB.length());
         return new StringSimilarity((maxLen - dist) / (double) maxLen, 1, strA, strB);
@@ -133,16 +139,34 @@ public abstract class Similarity {
         }
     }
 
-	public static <T extends Showable> Similarity bestOf(Similarity... sims) {
-		double bestValue = -1;
-		Similarity bestSim = new NoSimilarity();
-		for (Similarity similarity : sims) {
-			double val = similarity.similarity();
-			if (val > bestValue) {
-				bestValue = val;
-				bestSim = similarity;
-			}
-		}
-		return bestSim;
-	}
+    public static <T extends Showable> Similarity bestOf(Similarity... sims) {
+        double bestValue = -1;
+        Similarity bestSim = new NoSimilarity();
+        for (Similarity similarity : sims) {
+            double val = similarity.similarity();
+            if (val > bestValue) {
+                bestValue = val;
+                bestSim = similarity;
+            }
+        }
+        return bestSim;
+    }
+
+    public abstract <T> T accept(SimilarityVisitor<T> visitor);
+
+    public static interface SimilarityVisitor<T> {
+
+        T visit(CompositeSimilarity similarity);
+
+        <S extends Showable> T visit(LeafSimilarity<S> similarity);
+
+        <S extends Showable> T visit(LeftLeafSimilarity<S> similarity);
+
+        <S extends Showable> T visit(RightLeafSimilarity<S> similarity);
+
+        T visit(SimpleSimilarity similarity);
+
+        T visit(NoSimilarity similarity);
+
+    }
 }

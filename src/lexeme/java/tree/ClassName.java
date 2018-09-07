@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import diff.complexity.Showable;
 import lexer.Structure;
 import lexer.java.JavaLexer.JavaGrammar;
 import lombok.AllArgsConstructor;
@@ -39,11 +40,26 @@ public class ClassName implements JavaSyntax, Structure<JavaGrammar> {
     private final String name;
     private final List<ClassName> nestedSubParameters; // Null for N/A, empty for Type inference
     /** The number of dimensions. 0 for just a value without an array */
-    private final int arrayDimension;
+    private final ArrayDimension arrayDimension;
     private final Optional<ClassName> superClass;
     private final Optional<ClassName> extendsClass;
     private final List<ClassName> implementedInterfaces;
     private final CodeLocation location;
+
+    @Getter
+    @AllArgsConstructor
+    public static class ArrayDimension implements Showable {
+        int dimension;
+
+        @Override
+        public List<String> show(String prefix) {
+            List<String> list = new ArrayList<>();
+            if (dimension > 0) {
+                list.add(prefix + "[" + dimension + "]");
+            }
+            return list;
+        }
+    }
 
     /**
      * Attempts to build a class name.
@@ -83,7 +99,7 @@ public class ClassName implements JavaSyntax, Structure<JavaGrammar> {
         List<ClassName> implementedInterfaces = findInterfaces(local);
 
         // Attempt to find a n-dimensional array
-        int arrayDimension = countArrayDimension(local);
+        ArrayDimension arrayDimension = countArrayDimension(local);
 
         return Optional.of(new ClassName(className, found, arrayDimension, superClass, extendsClass, implementedInterfaces, local.commit()));
     }
@@ -133,14 +149,14 @@ public class ClassName implements JavaSyntax, Structure<JavaGrammar> {
         return new ArrayList<>();
     }
 
-    private static int countArrayDimension(CodeBranch input) {
-        int arrayDimension = 0; // 0 by default
+    private static ArrayDimension countArrayDimension(CodeBranch input) {
+        ArrayDimension arrayDimension = new ArrayDimension(0); // 0 by default
         while (true) {
             Matcher arrayMatcher = arrayPattern.matcher(input.getRest());
             if (!arrayMatcher.lookingAt()) {
                 break;
             }
-            arrayDimension++;
+            arrayDimension = new ArrayDimension(arrayDimension.getDimension() + 1);
             input.advance(arrayMatcher.end());
             JavaWhitespace.skipWhitespaceAndComments(input);
         }
@@ -257,10 +273,10 @@ public class ClassName implements JavaSyntax, Structure<JavaGrammar> {
             builder.append(">");
         }
         // Arrays
-        for (int lvl = 0; lvl < arrayDimension; lvl++) {
+        for (int lvl = 0; lvl < arrayDimension.getDimension(); lvl++) {
             builder.append("[");
         }
-        for (int lvl = 0; lvl < arrayDimension; lvl++) {
+        for (int lvl = 0; lvl < arrayDimension.getDimension(); lvl++) {
             builder.append("]");
         }
         // superclass
