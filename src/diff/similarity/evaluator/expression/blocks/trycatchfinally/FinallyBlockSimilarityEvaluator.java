@@ -11,16 +11,16 @@ import lexeme.java.tree.expression.blocks.trycatchfinally.FinallyBlock;
  */
 public class FinallyBlockSimilarityEvaluator extends SimilarityEvaluator<FinallyBlock> {
 
-    /** Instance */
-    public static final FinallyBlockSimilarityEvaluator INSTANCE = new FinallyBlockSimilarityEvaluator();
+	/** Instance */
+	public static final FinallyBlockSimilarityEvaluator INSTANCE = new FinallyBlockSimilarityEvaluator();
 
-    private FinallyBlockSimilarityEvaluator() {
-        super(FinallyBlockSizer.FINALLY_BLOCK_SIZER, "finally");
-    }
+	private FinallyBlockSimilarityEvaluator() {
+		super(FinallyBlockSizer.FINALLY_BLOCK_SIZER, "finally");
+	}
 
-    @Override
-    public Similarity eval(FinallyBlock obj1, FinallyBlock obj2) {
-        return ExpressionSimilarityEvaluator.INSTANCE.orderedEval(obj1.getFinallyExpressions(), obj2.getFinallyExpressions());
-    }
+	@Override
+	public Similarity eval(FinallyBlock obj1, FinallyBlock obj2) {
+		return ExpressionSimilarityEvaluator.INSTANCE.compareWithGaps(obj1.getFinallyExpressions(), obj2.getFinallyExpressions());
+	}
 
 }

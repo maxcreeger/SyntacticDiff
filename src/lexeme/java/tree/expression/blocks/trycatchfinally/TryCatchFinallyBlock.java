@@ -7,7 +7,6 @@ import java.util.Optional;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.blocks.AbstractBlock;
 import lexeme.java.tree.expression.blocks.BlockVisitor;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import tokenizer.CodeLocator.CodeBranch;
 import tokenizer.CodeLocator.CodeLocation;
@@ -17,74 +16,81 @@ import tokenizer.CodeLocator.CodeLocation;
  * May have resources in the try, a catch statement, and a finally statement.
  */
 @Getter
-@AllArgsConstructor
 public class TryCatchFinallyBlock extends AbstractBlock {
 
-    private final TryBlock tryBlock;
-    private final List<CatchBlock> catchBlocks;
-    private Optional<FinallyBlock> finallyBlock;
-    private final CodeLocation location;
+	private final TryBlock tryBlock;
+	private final List<CatchBlock> catchBlocks;
+	private final Optional<FinallyBlock> finallyBlock;
 
-    /**
-     * Attempts to build a {@link TryCatchFinallyBlock}
-     * @param inputRef the input text (is modified if the block is built)
-     * @return optionally, the block
-     */
-    public static Optional<TryCatchFinallyBlock> build(CodeBranch inputRef) {
-        CodeBranch fork = inputRef.fork();
+	public TryCatchFinallyBlock(TryBlock tryBlock, List<CatchBlock> catchBlocks, Optional<FinallyBlock> finallyBlock, CodeLocation location) {
+		super(location);
+		this.tryBlock = tryBlock;
+		this.catchBlocks = catchBlocks;
+		this.finallyBlock = finallyBlock;
+	}
 
-        // Try
-        Optional<TryBlock> tryBlock = TryBlock.build(fork);
-        if (!tryBlock.isPresent()) {
-            return Optional.empty();
-        }
+	/**
+	 * Attempts to build a {@link TryCatchFinallyBlock}
+	 * 
+	 * @param inputRef
+	 *            the input text (is modified if the block is built)
+	 * @return optionally, the block
+	 */
+	public static Optional<TryCatchFinallyBlock> build(CodeBranch inputRef) {
+		CodeBranch fork = inputRef.fork();
 
-        // Catch
-        List<CatchBlock> catches = CatchBlock.build(fork);
+		// Try
+		Optional<TryBlock> tryBlock = TryBlock.build(fork);
+		if (!tryBlock.isPresent()) {
+			return Optional.empty();
+		}
 
-        // Finally
-        Optional<FinallyBlock> finallyBlock = FinallyBlock.build(fork);
+		// Catch
+		List<CatchBlock> catches = CatchBlock.build(fork);
 
-        // Sanity check
-        if (tryBlock.get().getTryWithResources().isEmpty() && catches.isEmpty() && !finallyBlock.isPresent()) {
-            // Meaningless try: no resource, no catch, no finally. WTF?
-            return Optional.empty();
-        }
+		// Finally
+		Optional<FinallyBlock> finallyBlock = FinallyBlock.build(fork);
 
-        // Commit
-        // System.out.println("try[catch][finally] block detected");
-        return Optional.of(new TryCatchFinallyBlock(tryBlock.get(), catches, finallyBlock, fork.commit()));
-    }
+		// Sanity check
+		if (tryBlock.get().getTryWithResources().isEmpty() && catches.isEmpty() && !finallyBlock.isPresent()) {
+			// Meaningless try: no resource, no catch, no finally. WTF?
+			return Optional.empty();
+		}
 
-    @Override
-    public <T> T acceptBlockVisitor(BlockVisitor<T> visitor) {
-        return visitor.visit(this);
-    }
+		// Commit
+		// System.out.println("try[catch][finally] block detected");
+		return Optional.of(new TryCatchFinallyBlock(tryBlock.get(), catches, finallyBlock, fork.commit()));
+	}
 
-    // Display
+	@Override
+	public <T> T acceptBlockVisitor(BlockVisitor<T> visitor) {
+		return visitor.visit(this);
+	}
 
-    @Override
-    public List<String> show(String prefix) {
-        List<String> total = new ArrayList<>();
+	// Display
 
-        // TRY BLOCK
-        total.addAll(tryBlock.show(prefix));
+	@Override
+	public List<String> fullBreakdown(String prefix) {
+		List<String> total = new ArrayList<>();
 
-        // CATCH BLOCK(S)
-        for (CatchBlock catchBlock : catchBlocks) {
-            total.addAll(catchBlock.show(prefix));
-        }
-        // FINALLY
-        if (finallyBlock.isPresent()) {
-            total.addAll(finallyBlock.get().show(prefix));
-        }
+		// TRY BLOCK
+		total.addAll(tryBlock.fullBreakdown(prefix));
 
-        return total;
-    }
+		// CATCH BLOCK(S)
+		for (CatchBlock catchBlock : catchBlocks) {
+			total.addAll(catchBlock.fullBreakdown(prefix));
+		}
+		// FINALLY
+		if (finallyBlock.isPresent()) {
+			total.addAll(finallyBlock.get().fullBreakdown(prefix));
+		}
 
-    @Override
-    public List<Expression> getBody() {
-        return tryBlock.getTryExpressions();
-    }
+		return total;
+	}
+
+	@Override
+	public List<Expression> getBody() {
+		return tryBlock.getTryExpressions();
+	}
 
 }

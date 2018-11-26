@@ -11,14 +11,15 @@ import lexeme.java.tree.ParameterPassing;
 
 public class ParameterPassingSimilarityEvaluator extends SimilarityEvaluator<ParameterPassing> {
 
-    /** Evaluates {@link ParameterPassing}s . */
-    public static final ParameterPassingSimilarityEvaluator INSTANCE = new ParameterPassingSimilarityEvaluator();
+	/** Evaluates {@link ParameterPassing}s . */
+	public static final ParameterPassingSimilarityEvaluator INSTANCE = new ParameterPassingSimilarityEvaluator();
 
-    private ParameterPassingSimilarityEvaluator() {
-        super(ParameterPassingSizer.PARAMETERS_PASSING_SIZER, "param");
-    }
+	private ParameterPassingSimilarityEvaluator() {
+		super(ParameterPassingSizer.PARAMETERS_PASSING_SIZER, "param");
+	}
 
-    public Similarity eval(ParameterPassing params1, ParameterPassing params2) {
-        return Similarity.add(name, StatementSimilarityEvaluator.INSTANCE.orderedEval(params1.getParameters(), params2.getParameters()));
-    }
+	@Override
+	public Similarity eval(ParameterPassing params1, ParameterPassing params2) {
+		return Similarity.add(name, StatementSimilarityEvaluator.INSTANCE.compareWithGaps(params1.getParameters(), params2.getParameters()));
+	}
 }

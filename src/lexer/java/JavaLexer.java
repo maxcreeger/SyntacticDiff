@@ -1,5 +1,6 @@
 package lexer.java;
 
+import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -30,7 +31,12 @@ public class JavaLexer implements StructureLexer<JavaGrammar, Root> {
 
         /** A class for single Words */
         @SuppressWarnings("unchecked")
-        public static final Class<Word<JavaGrammar>> SINGLE_WORD_CLASS = (Class<Word<JavaGrammar>>) new WordImpl<JavaGrammar>(null).getClass();
+        public static final Class<Word<JavaGrammar>> SINGLE_WORD_CLASS;
+        static {
+            Class<Word<JavaGrammar>> result = null;
+            Type type = Word.class.getGenericInterfaces()[0];
+            SINGLE_WORD_CLASS =  (Class<Word<JavaGrammar>>)type;
+        }
 
         /** A class for single Words */
         @SuppressWarnings("unchecked")

@@ -54,7 +54,7 @@ public class PackageDeclaration implements Showable, Structure<JavaGrammar> {
     }
 
     @Override
-    public List<String> show(String prefix) {
+    public List<String> fullBreakdown(String prefix) {
         return Arrays.asList(prefix + toString());
     }
 

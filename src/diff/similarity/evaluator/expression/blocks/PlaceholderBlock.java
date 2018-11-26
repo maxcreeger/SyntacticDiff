@@ -3,6 +3,12 @@ package diff.similarity.evaluator.expression.blocks;
 import java.util.ArrayList;
 import java.util.List;
 
+import diff.complexity.expression.ExpressionSizer;
+import diff.similarity.LeftLeafSimilarity;
+import diff.similarity.Similarity;
+import diff.similarity.SimpleSimilarity;
+import diff.similarity.SimpleSimilarity.ShowableString;
+import diff.similarity.evaluator.expression.ExpressionSimilarityEvaluator;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.blocks.AbstractBlock;
 import lexeme.java.tree.expression.blocks.BlockVisitor;
@@ -11,21 +17,24 @@ import lexeme.java.tree.expression.blocks.ForBlock;
 import lexeme.java.tree.expression.blocks.IfBlock;
 import lexeme.java.tree.expression.blocks.WhileBlock;
 import lexeme.java.tree.expression.blocks.trycatchfinally.TryCatchFinallyBlock;
-import diff.complexity.expression.ExpressionSizer;
-import diff.similarity.LeftLeafSimilarity;
-import diff.similarity.Similarity;
-import diff.similarity.SimpleSimilarity;
-import diff.similarity.evaluator.expression.ExpressionSimilarityEvaluator;
+import lombok.Getter;
+import tokenizer.CodeLocator.CodeLocation;
 
+@Getter
 public class PlaceholderBlock extends AbstractBlock {
 
-	List<Expression> expressions;
+	private final ShowableString placeholderKeyword;
+	private final List<Expression> expressions;
 
-	public PlaceholderBlock(List<Expression> expressions) {
+	public PlaceholderBlock(List<Expression> expressions, CodeLocation location) {
+		super(location);
+		this.placeholderKeyword = new ShowableString("<nothing>", location);
 		this.expressions = expressions;
 	}
 
-	public PlaceholderBlock(Expression expression) {
+	public PlaceholderBlock(Expression expression, CodeLocation location) {
+		super(location);
+		this.placeholderKeyword = new ShowableString("<nothing>", location);
 		this.expressions = new ArrayList<>();
 		this.expressions.add(expression);
 	}
@@ -34,79 +43,90 @@ public class PlaceholderBlock extends AbstractBlock {
 
 		PlaceholderBlock rightPlaceholder;
 
+		public PlaceholderBlockSimilarityEvaluator(AbstractBlock block) {
+			this.rightPlaceholder = new PlaceholderBlock(block, block.getLocation());
+		}
+
 		public PlaceholderBlockSimilarityEvaluator(PlaceholderBlock block) {
 			this.rightPlaceholder = block;
 		}
 
-		public PlaceholderBlockSimilarityEvaluator(List<Expression> expressions) {
-			this.rightPlaceholder = new PlaceholderBlock(expressions);
+		public PlaceholderBlockSimilarityEvaluator(List<Expression> expressions, CodeLocation location) {
+			this.rightPlaceholder = new PlaceholderBlock(expressions, location);
 		}
 
-		public PlaceholderBlockSimilarityEvaluator(Expression expression) {
-			this.rightPlaceholder = new PlaceholderBlock(expression);
+		public PlaceholderBlockSimilarityEvaluator(Expression expression, CodeLocation location) {
+			this.rightPlaceholder = new PlaceholderBlock(expression, location);
 		}
 
 		@Override
 		public Similarity visit(TryCatchFinallyBlock leftTryCatchFinallyBlock) {
-			return TryCatchFinallyBlockSimilarityEvaluator.encloseRight(leftTryCatchFinallyBlock, rightPlaceholder, new SimpleSimilarity(0, 1,
-					"trycatchfinally", "0", "do"));
+			return TryCatchFinallyBlockSimilarityEvaluator.encloseRight(leftTryCatchFinallyBlock, rightPlaceholder,
+				new SimpleSimilarity(0, 1, leftTryCatchFinallyBlock.getTryBlock().getTryKeyword(), "0", rightPlaceholder.getPlaceholderKeyword()));
 		}
 
 		@Override
 		public Similarity visit(WhileBlock leftWhileBlock) {
-			Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, "while", "0", "<nothing>");
+			Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, leftWhileBlock.getWhileKeyword(), "0", rightPlaceholder.getPlaceholderKeyword());
 			Similarity evalDiff = new LeftLeafSimilarity<>(ExpressionSizer.EXPRESSION_SIZER.size(leftWhileBlock.getEvaluation()),
-					leftWhileBlock.getEvaluation());
-			Similarity bodyDiff = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftWhileBlock.getBody(), rightPlaceholder.expressions);
+				leftWhileBlock.getEvaluation());
+			Similarity bodyDiff = ExpressionSimilarityEvaluator.INSTANCE.compareWithGaps(leftWhileBlock.getBody(), rightPlaceholder.expressions);
 			return Similarity.add("trans-block", wrongBlockSimilarity, evalDiff, bodyDiff);
 		}
 
 		@Override
 		public Similarity visit(IfBlock leftIfBlock) {
 			// Match placeholder with THEN block
-			Similarity wrongBlockSimilarityThen = new SimpleSimilarity(0, 1, "if-then", "0", "<nothing>");
+			Similarity wrongBlockSimilarityThen = new SimpleSimilarity(0, 1, leftIfBlock.getIfKeyword(), "0", rightPlaceholder.getPlaceholderKeyword());
 			Similarity evalDiffThen = new LeftLeafSimilarity<>(ExpressionSizer.EXPRESSION_SIZER.size(leftIfBlock.getCondition()), leftIfBlock.getCondition());
-			Similarity bodyDiffThen = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftIfBlock.getBody(), rightPlaceholder.expressions);
+			Similarity bodyDiffThen = ExpressionSimilarityEvaluator.INSTANCE.compareWithGaps(leftIfBlock.getBody(), rightPlaceholder.expressions);
 			Similarity simThen = Similarity.add("trans-block", wrongBlockSimilarityThen, evalDiffThen, bodyDiffThen);
 
 			// Match placeholder with ELSE block
-			Similarity wrongBlockSimilarityElse = new SimpleSimilarity(0, 1, "if-else", "0", "<nothing>");
-			Similarity evalDiffElse = new LeftLeafSimilarity<>(ExpressionSizer.EXPRESSION_SIZER.size(leftIfBlock.getCondition()), leftIfBlock.getCondition());
-			Similarity bodyDiffElse = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftIfBlock.getElseExpressions(), rightPlaceholder.expressions);
-			Similarity simElse = Similarity.add("trans-block", wrongBlockSimilarityElse, evalDiffElse, bodyDiffElse);
-			return Similarity.bestOf(simThen, simElse);
+			if (leftIfBlock.getElseKeyword().isPresent()) {
+				Similarity wrongBlockSimilarityElse = new SimpleSimilarity(0, 1, leftIfBlock.getElseKeyword().get(), "0",
+					rightPlaceholder.getPlaceholderKeyword());
+				Similarity evalDiffElse = new LeftLeafSimilarity<>(ExpressionSizer.EXPRESSION_SIZER.size(leftIfBlock.getCondition()),
+					leftIfBlock.getCondition());
+				Similarity bodyDiffElse = ExpressionSimilarityEvaluator.INSTANCE.compareWithGaps(leftIfBlock.getElseExpressions(),
+					rightPlaceholder.expressions);
+				Similarity simElse = Similarity.add("trans-block", wrongBlockSimilarityElse, evalDiffElse, bodyDiffElse);
+				return Similarity.bestOf(simThen, simElse);
+			} else {
+				return simThen;
+			}
 		}
 
 		@Override
 		public Similarity visit(ForBlock leftForBlock) {
-			Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, "for", "0", "<nothing>");
+			Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, leftForBlock.getForKeyword(), "0", rightPlaceholder.getPlaceholderKeyword());
 			Similarity evalDiff = new LeftLeafSimilarity<>(ExpressionSizer.EXPRESSION_SIZER.size(leftForBlock.getEvaluation()), leftForBlock.getEvaluation());
-			Similarity bodyDiff = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftForBlock.getBody(), rightPlaceholder.expressions);
+			Similarity bodyDiff = ExpressionSimilarityEvaluator.INSTANCE.compareWithGaps(leftForBlock.getBody(), rightPlaceholder.expressions);
 			return Similarity.add("trans-block", wrongBlockSimilarity, evalDiff, bodyDiff);
 		}
 
 		@Override
 		public Similarity visit(DoWhileBlock leftDoWhileBlock) {
-			Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, "for", "0", "<nothing>");
+			Similarity wrongBlockSimilarity = new SimpleSimilarity(0, 1, leftDoWhileBlock.getDoKeyword(), "0", rightPlaceholder.getPlaceholderKeyword());
 			Similarity evalDiff = new LeftLeafSimilarity<>(ExpressionSizer.EXPRESSION_SIZER.size(leftDoWhileBlock.getEvaluation()),
-					leftDoWhileBlock.getEvaluation());
-			Similarity bodyDiff = ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftDoWhileBlock.getBody(), rightPlaceholder.expressions);
+				leftDoWhileBlock.getEvaluation());
+			Similarity bodyDiff = ExpressionSimilarityEvaluator.INSTANCE.compareWithGaps(leftDoWhileBlock.getBody(), rightPlaceholder.expressions);
 			return Similarity.add("trans-block", wrongBlockSimilarity, evalDiff, bodyDiff);
 		}
 
 		@Override
 		public Similarity visit(PlaceholderBlock leftPlaceholderBlock) {
-			return ExpressionSimilarityEvaluator.INSTANCE.orderedEval(leftPlaceholderBlock.getBody(), rightPlaceholder.getBody());
+			return ExpressionSimilarityEvaluator.INSTANCE.compareWithGaps(leftPlaceholderBlock.getBody(), rightPlaceholder.getBody());
 		}
 	};
 
 	@Override
-	public List<String> show(String prefix) {
+	public List<String> fullBreakdown(String prefix) {
 		List<String> result = new ArrayList<>();
 		result.add(prefix + "<placeholder> {");
 		String bodyPrefix = prefix + "~  ";
 		for (Expression expression : expressions) {
-			result.addAll(expression.show(bodyPrefix));
+			result.addAll(expression.fullBreakdown(bodyPrefix));
 		}
 		result.add(prefix + "}");
 		return result;

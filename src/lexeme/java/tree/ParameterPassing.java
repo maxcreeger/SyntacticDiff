@@ -24,88 +24,143 @@ import tokenizer.CodeLocator.CodeLocation;
 @AllArgsConstructor
 public class ParameterPassing implements Showable, Structure<JavaGrammar> {
 
-    private static final Pattern separatorPattern = Pattern.compile(",");
+	private static final Pattern separatorPattern = Pattern.compile(",");
 
-    private final List<Statement> parameters;
-    private final CodeLocation location;
+	private final List<Statement> parameters;
+	private final CodeLocation location;
 
-    /**
-     * Attempts to build a {@link List} of Statements that are passed as method parameters inside parenthesis (objA, objB).
-     * @param inputRef a mutable String, if a {@link ParameterPassing} is built then the <code>inputref</code> is mutated to remove its text representation.
-     * @return optionally, a {@link ParameterPassing}
-     */
-    public static Optional<ParameterPassing> build(CodeBranch inputRef) {
-        CodeBranch defensiveCopy = inputRef.fork();
+	/**
+	 * Attempts to build a {@link List} of Statements that are passed as method
+	 * parameters inside parenthesis (objA, objB).
+	 * 
+	 * @param inputRef
+	 *            a mutable String, if a {@link ParameterPassing} is built then
+	 *            the <code>inputref</code> is mutated to remove its text
+	 *            representation.
+	 * @return optionally, a {@link ParameterPassing}
+	 */
+	public static Optional<ParameterPassing> build(CodeBranch inputRef) {
+		CodeBranch defensiveCopy = inputRef.fork();
 
-        // Open parenthesis
-        if (!Parenthesis.open(defensiveCopy)) {
-            return Optional.empty();
-        }
+		// Open parenthesis
+		if (!Parenthesis.open(defensiveCopy)) {
+			return Optional.empty();
+		}
 
-        // Browse for arguments (could be none)
-        List<Statement> arguments = new ArrayList<>();
-        while (true) {
-            // Attempt to read a Statement
-            Optional<? extends Statement> arg = Statement.build(defensiveCopy);
-            if (!arg.isPresent()) {
-                break;
-            }
-            arguments.add(arg.get());
+		// Browse for arguments (could be none)
+		List<Statement> arguments = new ArrayList<>();
+		while (true) {
+			// Attempt to read a Statement
+			Optional<? extends Statement> arg = Statement.build(defensiveCopy);
+			if (!arg.isPresent()) {
+				break;
+			}
+			arguments.add(arg.get());
 
-            // Attempt to have a delimiter between statements?
-            if (delimiter(defensiveCopy)) {
-                continue; // Yay! another one!
-            } else {
-                break; // Hmm it's over
-            }
-        }
+			// Attempt to have a delimiter between statements?
+			if (delimiter(defensiveCopy)) {
+				continue; // Yay! another one!
+			} else {
+				break; // Hmm it's over
+			}
+		}
 
-        // Attempt close parenthesis
-        if (!Parenthesis.close(defensiveCopy)) {
-            return Optional.empty();
-        }
+		// Attempt close parenthesis
+		if (!Parenthesis.close(defensiveCopy)) {
+			return Optional.empty();
+		}
 
-        // A ParameterPassing Object can be constructed, commit changes to the input and return the object
-        return Optional.of(new ParameterPassing(arguments, defensiveCopy.commit()));
-    }
+		// A ParameterPassing Object can be constructed, commit changes to the input and return the object
+		return Optional.of(new ParameterPassing(arguments, defensiveCopy.commit()));
+	}
 
-    private static boolean delimiter(CodeBranch code) {
-        Matcher separator = separatorPattern.matcher(code.getRest());
-        if (!separator.lookingAt()) {
-            return false;
-        }
-        code.advance(separator.end());
-        JavaWhitespace.skipWhitespaceAndComments(code);
-        return true;
-    }
+	private static boolean delimiter(CodeBranch code) {
+		Matcher separator = separatorPattern.matcher(code.getRest());
+		if (!separator.lookingAt()) {
+			return false;
+		}
+		code.advance(separator.end());
+		JavaWhitespace.skipWhitespaceAndComments(code);
+		return true;
+	}
 
-    public List<String> show(String prefix) {
-        List<String> result = new ArrayList<>();
-        if (parameters.size() == 0) {
-            // No parameters
-            return new ArrayList<>();
-        } else if (parameters.size() == 1) {
-            Statement arg = parameters.get(0);
-            final List<String> showArg = arg.show("");
-            if (showArg.size() == 1) {
-                // Single 1-line parameter
-                return Arrays.asList(prefix + showArg.get(0));
-            } else {
-                // Single parameter is long, needs multiple lines
-                for (int j = 0; j < showArg.size(); j++) {
-                    result.add(prefix + showArg.get(j));
-                }
-            }
-        } else {
-            // Multiple parameters
-            for (int i = 0; i < parameters.size(); i++) {
-                Statement arg = parameters.get(i);
-                final List<String> showArg = arg.show("");
-                for (int j = 0; j < showArg.size(); j++) {
-                    result.add(prefix + showArg.get(j) + (i < parameters.size() - 1 && j == showArg.size() - 1 ? "," : "")); // separator
-                }
-            }
-        }
-        return result;
-    }
+	@Override
+	public List<String> fullBreakdown(String prefix) {
+		List<String> result = new ArrayList<>();
+		if (parameters.size() == 0) {
+			// No parameters
+			return new ArrayList<>();
+		} else if (parameters.size() == 1) {
+			Statement arg = parameters.get(0);
+			final List<String> showArg = arg.fullBreakdown("");
+			if (showArg.size() == 1) {
+				// Single 1-line parameter
+				return Arrays.asList(prefix + showArg.get(0));
+			} else {
+				// Single parameter is long, needs multiple lines
+				for (int j = 0; j < showArg.size(); j++) {
+					result.add(prefix + showArg.get(j));
+				}
+			}
+		} else {
+			// Multiple parameters
+			for (int i = 0; i < parameters.size(); i++) {
+				Statement arg = parameters.get(i);
+				final List<String> showArg = arg.fullBreakdown("");
+				for (int j = 0; j < showArg.size(); j++) {
+					result.add(prefix + showArg.get(j) + (i < parameters.size() - 1 && j == showArg.size() - 1 ? "," : "")); // separator
+				}
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public List<String> nativeFormat(String prefix) {
+		List<String> result = new ArrayList<>();
+		if (parameters.size() == 0) {
+			// No parameters
+			return new ArrayList<>();
+		} else if (parameters.size() == 1) {
+			Statement arg = parameters.get(0);
+			final List<String> showArg = arg.nativeFormat("");
+			if (showArg.size() == 1) {
+				// Single 1-line parameter
+				return Arrays.asList(prefix + showArg.get(0));
+			} else {
+				// Single parameter is long, needs multiple lines
+				for (int j = 0; j < showArg.size(); j++) {
+					result.add(prefix + showArg.get(j));
+				}
+			}
+		} else {
+			// Multiple parameters
+			String firstLine = "";
+			String offset = "";
+			String separator = "";
+			for (int i = 0; i < parameters.size(); i++) {
+				Statement arg = parameters.get(i);
+				final List<String> showArg = arg.nativeFormat("");
+				if (showArg.size() == 1) {
+					firstLine += separator + showArg.get(0);
+					separator = ", ";
+					offset = new String(new char[firstLine.length() + 1]).replace("\0", " ");
+				} else {
+					result.add(prefix + firstLine + showArg.get(0));
+					for (int n = 1; n < showArg.size() - 1; n++) {
+						result.add(prefix + offset + showArg.get(n));
+					}
+					firstLine = offset + showArg.get(showArg.size() - 1);
+					offset = offset + new String(new char[showArg.get(showArg.size() - 1).length() + 1]).replace("\0", " ");
+				}
+			}
+			result.add(prefix + firstLine);
+		}
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return String.join("\n", nativeFormat(""));
+	}
 }

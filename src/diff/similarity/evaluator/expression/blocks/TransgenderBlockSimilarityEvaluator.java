@@ -1,5 +1,7 @@
 package diff.similarity.evaluator.expression.blocks;
 
+import diff.similarity.Similarity;
+import diff.similarity.evaluator.expression.blocks.PlaceholderBlock.PlaceholderBlockSimilarityEvaluator;
 import lexeme.java.tree.expression.blocks.AbstractBlock;
 import lexeme.java.tree.expression.blocks.BlockVisitor;
 import lexeme.java.tree.expression.blocks.DoWhileBlock;
@@ -8,8 +10,6 @@ import lexeme.java.tree.expression.blocks.IfBlock;
 import lexeme.java.tree.expression.blocks.WhileBlock;
 import lexeme.java.tree.expression.blocks.trycatchfinally.TryCatchFinallyBlock;
 import lombok.AllArgsConstructor;
-import diff.similarity.Similarity;
-import diff.similarity.evaluator.expression.blocks.PlaceholderBlock.PlaceholderBlockSimilarityEvaluator;
 
 /**
  * Compares a {@link TryCatchFinallyBlock} to any other {@link AbstractBlock} to
@@ -23,8 +23,10 @@ public class TransgenderBlockSimilarityEvaluator implements BlockVisitor<Similar
 	@Override
 	public Similarity visit(TryCatchFinallyBlock rightTryCatchFinallyBlock) {
 		Similarity direct = leftBlock.acceptBlockVisitor(new TryCatchFinallyBlockSimilarityEvaluator(rightTryCatchFinallyBlock));
-		Similarity rightInPlaceholder = leftBlock.acceptBlockVisitor(new PlaceholderBlockSimilarityEvaluator(rightTryCatchFinallyBlock));
-		Similarity leftInPlaceholder = new PlaceholderBlockSimilarityEvaluator(leftBlock).visit(rightTryCatchFinallyBlock);
+		PlaceholderBlockSimilarityEvaluator rightEvaluator = new PlaceholderBlockSimilarityEvaluator(rightTryCatchFinallyBlock);
+		Similarity rightInPlaceholder = leftBlock.acceptBlockVisitor(rightEvaluator);
+		PlaceholderBlockSimilarityEvaluator leftEvaluator = new PlaceholderBlockSimilarityEvaluator(leftBlock);
+		Similarity leftInPlaceholder = leftEvaluator.visit(rightTryCatchFinallyBlock);
 		return Similarity.bestOf(leftInPlaceholder, direct, rightInPlaceholder);
 	}
 

@@ -127,7 +127,7 @@ public class SequenceStructure<G extends Grammar> implements Structure<G> {
         SequenceStructureLexer<JavaGrammar> seqFinder = new SequenceStructureLexer<>("test finder");
         StructureLexer<JavaGrammar, Symbol<JavaGrammar>> importLexer =
                 new SingleSymbolStructureLexer<JavaGrammar>(token -> "import".equals(token.get()));
-        Class<Symbol<JavaGrammar>> tokenClass = (Class<Symbol<JavaGrammar>>) new SymbolImpl<JavaGrammar>(null).getClass();
+        Class<Symbol<JavaGrammar>> tokenClass = (Class<Symbol<JavaGrammar>>)Symbol.class.getGenericInterfaces()[0];
         seqFinder.addLexer(tokenClass, importLexer);
         final List<Token<JavaGrammar>> tokenList = JavaCodeTokenizer.TOKENIZER.tokenizeAll(new CodeLocator("import java;").branch()).get();
         final TokenStream<JavaGrammar> stream = TokenStream.of(tokenList);

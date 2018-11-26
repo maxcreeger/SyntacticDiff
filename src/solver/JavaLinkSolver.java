@@ -5,13 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import diff.similarity.evaluator.expression.blocks.PlaceholderBlock;
 import lexeme.java.tree.ClassDeclaration;
 import lexeme.java.tree.ClassName;
 import lexeme.java.tree.ImportStatement;
+import lexeme.java.tree.JavaSyntax;
 import lexeme.java.tree.MethodDeclaration;
 import lexeme.java.tree.ParameterTypeDeclaration;
 import lexeme.java.tree.Root;
-import lexeme.java.tree.JavaSyntax;
 import lexeme.java.tree.expression.EmptyExpression;
 import lexeme.java.tree.expression.Expression;
 import lexeme.java.tree.expression.ExpressionVisitor;
@@ -35,7 +36,6 @@ import lexeme.java.tree.expression.statement.StatementVisitor;
 import lexeme.java.tree.expression.statement.VariableReference;
 import lexeme.java.tree.expression.statement.operators.Operator;
 import lexeme.java.tree.expression.statement.primitivetypes.PrimitiveValue;
-import diff.similarity.evaluator.expression.blocks.PlaceholderBlock;
 
 /**
  * Class to compute stuff on Java syntax.
@@ -290,7 +290,7 @@ public class JavaLinkSolver {
 				register(method);
 			}
 			// Register inner classes
-			Scope instanceScope = subscope("instance " + classDeclaration.getClassName().getName());
+			Scope instanceScope = subscope("instance " + classDeclaration.getClassName().getContent());
 			for (ClassDeclaration innerStatic : classDeclaration.getInnerClasses()) {
 				instanceScope.register(innerStatic);
 			}

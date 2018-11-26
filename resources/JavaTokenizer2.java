@@ -17,8 +17,9 @@ public class JavaTokenizer2 {
     float fiveF = 5f;
     char achar = 'a';
     char escapedN = '\n';
-
-    private final String file;
+    int[][] table = new int[5+6][7];
+    //public String unmatchable = "unmatchable!!!";
+    protected final String file;
 
     /**
      * Loads up a file, ready to be tokenized.
@@ -29,6 +30,8 @@ public class JavaTokenizer2 {
     }
 
     private static String readFile(String filePath) {
+    	int tot1 = 5 * 5 + 6;
+    	int tot2 = 5 + 5 * 6;
         String.join("|", "a", "b", "c");
         StringBuilder file = new StringBuilder();
         try (FileReader stream = new FileReader(filePath); BufferedReader reader = new BufferedReader(stream)) {
@@ -48,7 +51,7 @@ public class JavaTokenizer2 {
      * Alternate stupid version
      * @return something
      */
-    public Root tokenize2() {
+    protected Root tokenize2() {
         Optional<Root> root = Root.build(file);
         System.out.println("Done2!");
         if (false) {
@@ -63,8 +66,7 @@ public class JavaTokenizer2 {
      */
     public Root tokenize() {
         Optional<Root> root = Root.build(file);
-        System.out.println("Done1!");
+        System.out.println("Done");
         return root.get();
     }
-
 }

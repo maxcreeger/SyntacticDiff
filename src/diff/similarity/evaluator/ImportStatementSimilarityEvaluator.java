@@ -1,8 +1,10 @@
 package diff.similarity.evaluator;
 
-import lexeme.java.tree.ImportStatement;
 import diff.complexity.ImportStatementSizer;
 import diff.similarity.Similarity;
+import diff.similarity.SimpleSimilarity.ShowableString;
+import diff.similarity.StringSimilarity;
+import lexeme.java.tree.ImportStatement;
 
 /**
  * Compares two {@link ImportStatement}s.
@@ -18,6 +20,8 @@ public class ImportStatementSimilarityEvaluator extends SimilarityEvaluator<Impo
 
 	@Override
 	public Similarity eval(ImportStatement import1, ImportStatement import2) {
-		return Similarity.eval(import1.getImportStatement(), import2.getImportStatement());
+		ShowableString leftString = new ShowableString(import1.getImportStatement(), import1.getLocation());
+		ShowableString rightString = new ShowableString(import2.getImportStatement(), import2.getLocation());
+		return StringSimilarity.eval(leftString, rightString);
 	}
 }

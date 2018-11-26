@@ -22,7 +22,7 @@ public class JavaTokenizerTest {
 	public void testTokenize() {
 		SyntacticSettings.useColorsInConsole(true);
 		Root javaTokenizer1 = new JavaTokenizer("resources/JavaTokenizer.java").tokenize();
-		System.out.println(String.join("\n", javaTokenizer1.show("TK1> ")));
+		System.out.println(String.join("\n", javaTokenizer1.fullBreakdown("TK1> ")));
 		SyntacticSettings.useColorsInConsole(false);
 	}
 

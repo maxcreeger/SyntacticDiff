@@ -7,7 +7,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lexeme.java.tree.JavaWhitespace;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import tokenizer.CodeLocator.CodeBranch;
 import tokenizer.CodeLocator.CodeLocation;
@@ -16,49 +15,54 @@ import tokenizer.CodeLocator.CodeLocation;
  * Represents a char literal like <code>'c'</code>.
  */
 @Getter
-@AllArgsConstructor
 public class CharValue extends PrimitiveValue {
 
+	private static final Pattern charPattern = Pattern.compile("'(\\\\?.)'");
 
-    private static final Pattern charPattern = Pattern.compile("'(\\\\?.)'");
+	private final String charContent;
 
-    private final String charContent;
-    private final CodeLocation location;
+	public CharValue(String charContent, CodeLocation location) {
+		super(location);
+		this.charContent = charContent;
+	}
 
-    /**
-     * Attempts to build the primitive.
-     * @param inputRef the mutable input text (is modified if the primitive is created)
-     * @return optionally, the primitive
-     */
-    public static Optional<CharValue> build(CodeBranch inputRef) {
-        CodeBranch fork = inputRef.fork();
-        Matcher stringMatcher = charPattern.matcher(fork.getRest());
-        if (stringMatcher.lookingAt()) {
-            fork.advance(stringMatcher.end());
-            JavaWhitespace.skipWhitespaceAndComments(inputRef);
-            return Optional.of(new CharValue(stringMatcher.group(1), fork.commit()));
-        } else {
-            return Optional.empty();
-        }
-    }
+	/**
+	 * Attempts to build the primitive.
+	 * 
+	 * @param inputRef
+	 *            the mutable input text (is modified if the primitive is
+	 *            created)
+	 * @return optionally, the primitive
+	 */
+	public static Optional<CharValue> build(CodeBranch inputRef) {
+		CodeBranch fork = inputRef.fork();
+		Matcher stringMatcher = charPattern.matcher(fork.getRest());
+		if (stringMatcher.lookingAt()) {
+			fork.advance(stringMatcher.end());
+			JavaWhitespace.skipWhitespaceAndComments(inputRef);
+			return Optional.of(new CharValue(stringMatcher.group(1), fork.commit()));
+		} else {
+			return Optional.empty();
+		}
+	}
 
-    @Override
-    public List<String> show(String prefix) {
-        return Arrays.asList(prefix + "'" + charContent + "'");
-    }
+	@Override
+	public List<String> fullBreakdown(String prefix) {
+		return Arrays.asList(prefix + "'" + charContent + "'");
+	}
 
-    @Override
-    public <T> T visit(PrimitiveVisitor<T> visitor) {
-        return visitor.visit(this);
-    }
+	@Override
+	public <T> T visit(PrimitiveVisitor<T> visitor) {
+		return visitor.visit(this);
+	}
 
-    @Override
-    public String getWord() {
-        return "'" + charContent + "'";
-    }
+	@Override
+	public String getWord() {
+		return "'" + charContent + "'";
+	}
 
-    @Override
-    public String toString() {
-        return getWord();
-    }
+	@Override
+	public String toString() {
+		return getWord();
+	}
 }

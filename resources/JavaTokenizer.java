@@ -14,11 +14,12 @@ import parser.syntaxtree.Root;
 public class JavaTokenizer {
 
     private final String file;
-    int five = 5;
+    public int five = 5+5;
     long fiveL = 500L;
     float complex = -.25e-3f;
     boolean isTrue = true;
     char escapedQuot = '\'';
+    int[][] table = new int[5+6][7];
 
     /**
      * Loads up a file, ready to be tokenized.
@@ -29,6 +30,8 @@ public class JavaTokenizer {
     }
 
     private static String readFile(String filePath) {
+    	int tot1 = 5 * 5 + 6;
+    	int tot2 = 5 * 5 + 6;
         String.join("|", "a", "b", "c");
         StringBuilder file = new StringBuilder();
         try (FileReader stream = new FileReader(filePath); BufferedReader reader = new BufferedReader(stream)) {
@@ -49,7 +52,7 @@ public class JavaTokenizer {
      */
     public Root tokenize() {
         Optional<Root> root = Root.build(file);
-        System.out.println("done1");
+        System.out.println("Done");
         return root.get();
     }
 

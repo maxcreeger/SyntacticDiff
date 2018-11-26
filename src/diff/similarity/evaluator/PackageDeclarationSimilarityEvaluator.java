@@ -1,8 +1,9 @@
 package diff.similarity.evaluator;
 
-import lexeme.java.tree.PackageDeclaration;
 import diff.complexity.PackageDeclarationSizer;
 import diff.similarity.Similarity;
+import diff.similarity.SimpleSimilarity.ShowableString;
+import lexeme.java.tree.PackageDeclaration;
 
 /**
  * Compares two {@link PackageDeclaration}s.
@@ -18,6 +19,8 @@ public class PackageDeclarationSimilarityEvaluator extends SimilarityEvaluator<P
 
 	@Override
 	public Similarity eval(PackageDeclaration pack1, PackageDeclaration pack2) {
-		return Similarity.eval(pack1.getPackageDeclaration(), pack2.getPackageDeclaration());
+		ShowableString left = new ShowableString(pack1.getPackageDeclaration(), pack1.getLocation());
+		ShowableString right = new ShowableString(pack2.getPackageDeclaration(), pack2.getLocation());
+		return Similarity.eval(left, right);
 	}
 }
