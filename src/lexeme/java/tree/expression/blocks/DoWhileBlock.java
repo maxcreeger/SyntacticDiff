@@ -67,9 +67,7 @@ public class DoWhileBlock extends AbstractBlock {
 		} else {
 			// Single 'do' expression
 			Optional<? extends Expression> expr = Expression.build(fork);
-			if (expr.isPresent()) {
-				doExpressions.add(expr.get());
-			}
+			expr.ifPresent(doExpressions::add);
 		}
 
 		// Expect 'while' keyword

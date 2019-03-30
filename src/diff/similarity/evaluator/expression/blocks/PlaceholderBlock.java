@@ -118,7 +118,7 @@ public class PlaceholderBlock extends AbstractBlock {
 		public Similarity visit(PlaceholderBlock leftPlaceholderBlock) {
 			return ExpressionSimilarityEvaluator.INSTANCE.compareWithGaps(leftPlaceholderBlock.getBody(), rightPlaceholder.getBody());
 		}
-	};
+	}
 
 	@Override
 	public List<String> fullBreakdown(String prefix) {

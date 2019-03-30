@@ -17,7 +17,6 @@ import tokenizer.Token;
 import tokenizer.TokenStream;
 import tokenizer.java.JavaCodeTokenizer;
 import tokenizer.tokens.Symbol;
-import tokenizer.tokens.SymbolImpl;
 
 /**
  * Represents an ordered, logical sequence of structures.

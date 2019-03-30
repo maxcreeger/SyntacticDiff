@@ -2,7 +2,6 @@ package diff;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import diff.complexity.Showable;
 import diff.complexity.SyntaxSizer;
@@ -73,13 +72,13 @@ public class SeriesComparator<T extends Showable> {
 		if (listA.isEmpty()) {
 			List<Similarity> result = new ArrayList<>();
 			for (T elemB : listB) {
-				result.add(new RightLeafSimilarity<T>(sizer.size(elemB), elemB));
+				result.add(new RightLeafSimilarity<>(sizer.size(elemB), elemB));
 			}
 			return result;
 		} else if (listB.isEmpty()) {
 			List<Similarity> result = new ArrayList<>();
 			for (T elemA : listA) {
-				result.add(new LeftLeafSimilarity<T>(sizer.size(elemA), elemA));
+				result.add(new LeftLeafSimilarity<>(sizer.size(elemA), elemA));
 			}
 			return result;
 		} else { // None empty
@@ -135,7 +134,7 @@ public class SeriesComparator<T extends Showable> {
 	}
 
 	private double totalSimilarity(List<Similarity> input) {
-		return input.stream().collect(Collectors.summingDouble(Similarity::similarity));
+		return input.stream().mapToDouble(Similarity::similarity).sum();
 	}
 
 	private Similarity compareElements(T elemA, T elemB) {
@@ -143,11 +142,11 @@ public class SeriesComparator<T extends Showable> {
 			if (elemB == null) {
 				return new NoSimilarity();
 			} else {
-				return new RightLeafSimilarity<T>(sizer.size(elemB), elemB);
+				return new RightLeafSimilarity<>(sizer.size(elemB), elemB);
 			}
 		} else {
 			if (elemB == null) {
-				return new LeftLeafSimilarity<T>(sizer.size(elemA), elemA);
+				return new LeftLeafSimilarity<>(sizer.size(elemA), elemA);
 			} else {
 				return evaluator.eval(elemA, elemB);
 			}

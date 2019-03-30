@@ -73,7 +73,7 @@ public class JavaLinkSolver {
 
 			@Override
 			public Void visit(Return return1) {
-				return1.getReturnedValue().ifPresent(val -> register(val));
+				return1.getReturnedValue().ifPresent(Scope.this::register);
 				return null;
 			}
 
@@ -175,7 +175,7 @@ public class JavaLinkSolver {
 			@Override
 			public Void visit(VariableDeclaration variable) {
 				Scope.this.variables.add(variable);
-				variable.getInitialAssignement().ifPresent(assignment -> Scope.this.register(assignment));
+				variable.getInitialAssignement().ifPresent(Scope.this::register);
 				return null;
 			}
 

@@ -117,7 +117,6 @@ public abstract class Expression implements JavaSyntax {
 				defensiveCopy = input.fork();
 			}
 		}
-
 		return Optional.empty();
 	}
 

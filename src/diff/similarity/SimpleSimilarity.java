@@ -108,7 +108,7 @@ public class SimpleSimilarity extends Similarity {
 
 	@Override
 	public String toString() {
-		return String.join("\n", show("").stream().flatMap(array -> Arrays.stream(array)).collect(Collectors.toList()));
+		return String.join("\n", show("").stream().flatMap(Arrays::stream).collect(Collectors.toList()));
 	}
 
 }

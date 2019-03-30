@@ -81,9 +81,7 @@ public class WhileBlock extends AbstractBlock {
 		} else {
 			// Single 'while' expression
 			Optional<? extends Expression> expr = Expression.build(fork);
-			if (expr.isPresent()) {
-				whileExpressions.add(expr.get());
-			}
+			expr.ifPresent(whileExpressions::add);
 		}
 
 		// System.out.println("while block detected");

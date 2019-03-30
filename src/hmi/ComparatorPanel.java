@@ -66,7 +66,7 @@ public class ComparatorPanel extends JPanel {
     }
     static final Canvas canvas = new Canvas();
     static final FontMetrics metrics = canvas.getFontMetrics(myFont);
-    static final int hgt = metrics.getHeight();;
+    static final int hgt = metrics.getHeight();
     DrawableCode drawableString;
     DrawableCode drawableShowableNative;
     DrawableStructure drawableSimilarity;
@@ -118,7 +118,7 @@ public class ComparatorPanel extends JPanel {
     }
 
     public void listAllFonts() {
-        String fonts[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        String[] fonts = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
         for (int i = 0; i < fonts.length; i++) {
             System.out.println(fonts[i]);
         }
@@ -127,7 +127,7 @@ public class ComparatorPanel extends JPanel {
     public static void main(String[] arg) throws FileNotFoundException, IOException {
         StringBuilder file = new StringBuilder();
         try (FileReader stream = new FileReader("resources/JavaTokenizer.java"); BufferedReader reader = new BufferedReader(stream)) {
-            String line = null;
+            String line;
             while ((line = reader.readLine()) != null) {
                 file.append(line).append('\n');
             }
@@ -453,7 +453,7 @@ public class ComparatorPanel extends JPanel {
             }
         }
 
-        public static interface DrawableCode {
+        public interface DrawableCode {
 
             void draw(Point root, Graphics2D g);
 

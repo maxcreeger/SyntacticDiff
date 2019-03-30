@@ -62,9 +62,8 @@ public class ArrayDeclaration extends Statement {
 	 */
 	private static Optional<ArrayInitialization> discoverEmptyInitialization(CodeBranch inputRef) {
 		List<Expression> arraySizes = new ArrayList<>();
-		boolean keepOn = true;
 		CodeBranch fork = inputRef.fork();
-		while (keepOn) {
+		while (true) {
 			boolean begin = Bracket.open(fork);
 			if (!begin) {
 				break;
@@ -117,8 +116,7 @@ public class ArrayDeclaration extends Statement {
 		CodeBranch fork = input.fork();
 		// Match empty square bracket chain "[][]"
 		int nbDimensions = 0;
-		boolean keepOn = true;
-		while (keepOn) {
+		while (true) {
 			boolean begin = Bracket.open(fork);
 			if (!begin) {
 				break;

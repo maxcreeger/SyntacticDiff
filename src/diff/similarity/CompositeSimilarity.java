@@ -235,8 +235,6 @@ public abstract class CompositeSimilarity extends Similarity {
 	 *            the similarity
 	 * @param amount
 	 *            the size
-	 * @param contents
-	 *            the contents
 	 */
 	protected CompositeSimilarity(String name, double same, int amount) {
 		super(same, amount);
@@ -276,7 +274,7 @@ public abstract class CompositeSimilarity extends Similarity {
 			for (int i = 0; i < show.size(); i++) {
 				String pref;
 				if (i == 0) {
-					pref = "+——";
+					pref = "+ï¿½ï¿½";
 				} else {
 					pref = separator;
 				}

@@ -21,7 +21,6 @@ import tokenizer.tokens.Symbol;
 import tokenizer.tokens.SymbolImpl;
 import tokenizer.tokens.Whitespace;
 import tokenizer.tokens.Word;
-import tokenizer.tokens.Word.WordImpl;
 
 /** Lexes an entire Java TokenStream to produce a {@link Root} object. */
 public class JavaLexer implements StructureLexer<JavaGrammar, Root> {
@@ -82,7 +81,7 @@ public class JavaLexer implements StructureLexer<JavaGrammar, Root> {
     }
 
     @SuppressWarnings("javadoc")
-    public static enum JavaSymbols {
+    public enum JavaSymbols {
         // Separators
         SEMICOLON("(;)", ";"), //
         COMA("(,)", ","), //

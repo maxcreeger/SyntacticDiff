@@ -24,7 +24,6 @@ import lexeme.java.tree.expression.blocks.DoWhileBlock;
 import lexeme.java.tree.expression.blocks.ForBlock;
 import lexeme.java.tree.expression.blocks.IfBlock;
 import lexeme.java.tree.expression.blocks.WhileBlock;
-import lexeme.java.tree.expression.blocks.trycatchfinally.FinallyBlock;
 import lexeme.java.tree.expression.blocks.trycatchfinally.TryCatchFinallyBlock;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -95,7 +94,7 @@ public class TryCatchFinallyBlockSimilarityEvaluator implements BlockVisitor<Sim
 	public Similarity encloseLeft(Expression leftExpression, Similarity wrongBlockSim) {
 		// Right leaf: resources
 		List<VariableDeclaration> tryWithResources = rightTryCatchFinallyBlock.getTryBlock().getTryWithResources();
-		List<Expression> tryWithResourcesExpressions = new ArrayList<Expression>(tryWithResources);
+		List<Expression> tryWithResourcesExpressions = new ArrayList<>(tryWithResources);
 		Similarity resourceSim = Similarity.add("resources",
 			tryWithResourcesExpressions	.stream().map(res -> LeftLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(res), res))
 										.collect(Collectors.toList()));
@@ -109,7 +108,7 @@ public class TryCatchFinallyBlockSimilarityEvaluator implements BlockVisitor<Sim
 			rightTryCatchFinallyBlock	.getCatchBlocks().stream().map(expr -> LeftLeafSimilarity.build(CatchBlockSizer.CATCH_BLOCK_SIZER.size(expr), expr))
 										.collect(Collectors.toList()));
 		Similarity finallySim = rightTryCatchFinallyBlock.getFinallyBlock().isPresent()
-			? new RightLeafSimilarity<FinallyBlock>(FinallyBlockSizer.FINALLY_BLOCK_SIZER.size(rightTryCatchFinallyBlock.getFinallyBlock().get()),
+			? new RightLeafSimilarity<>(FinallyBlockSizer.FINALLY_BLOCK_SIZER.size(rightTryCatchFinallyBlock.getFinallyBlock().get()),
 				rightTryCatchFinallyBlock.getFinallyBlock().get())
 			: new NoSimilarity();
 		return Similarity.add("trans-block", wrongBlockSim, resourceSim, bodySim, catchSim, finallySim);
@@ -131,7 +130,7 @@ public class TryCatchFinallyBlockSimilarityEvaluator implements BlockVisitor<Sim
 	public static Similarity encloseRight(TryCatchFinallyBlock leftTryCatchFinallyBlock, Expression rightExpression, Similarity wrongBlockSim) {
 		// Right leaf: resources
 		List<VariableDeclaration> tryWithResources = leftTryCatchFinallyBlock.getTryBlock().getTryWithResources();
-		List<Expression> tryWithResourcesExpressions = new ArrayList<Expression>(tryWithResources);
+		List<Expression> tryWithResourcesExpressions = new ArrayList<>(tryWithResources);
 		Similarity resourceSim = Similarity.add("resources",
 			tryWithResourcesExpressions	.stream().map(res -> LeftLeafSimilarity.build(ExpressionSizer.EXPRESSION_SIZER.size(res), res))
 										.collect(Collectors.toList()));
@@ -145,7 +144,7 @@ public class TryCatchFinallyBlockSimilarityEvaluator implements BlockVisitor<Sim
 			leftTryCatchFinallyBlock.getCatchBlocks().stream().map(expr -> LeftLeafSimilarity.build(CatchBlockSizer.CATCH_BLOCK_SIZER.size(expr), expr))
 									.collect(Collectors.toList()));
 		Similarity finallySim = leftTryCatchFinallyBlock.getFinallyBlock().isPresent()
-			? new LeftLeafSimilarity<FinallyBlock>(FinallyBlockSizer.FINALLY_BLOCK_SIZER.size(leftTryCatchFinallyBlock.getFinallyBlock().get()),
+			? new LeftLeafSimilarity<>(FinallyBlockSizer.FINALLY_BLOCK_SIZER.size(leftTryCatchFinallyBlock.getFinallyBlock().get()),
 				leftTryCatchFinallyBlock.getFinallyBlock().get())
 			: new NoSimilarity();
 		return Similarity.add("trans-block", wrongBlockSim, resourceSim, bodySim, catchSim, finallySim);

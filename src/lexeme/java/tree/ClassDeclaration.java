@@ -66,7 +66,7 @@ public class ClassDeclaration implements JavaSyntax {
 	/**
 	 * Attempts to build a {@link ClassDeclaration} from the input.
 	 * 
-	 * @param inputRef
+	 * @param input
 	 *            a mutable text, if a class definition is found the text
 	 *            declaration is removed.
 	 * @return optionally, a class declaration
